@@ -1,0 +1,2 @@
+These minimal examples shows how to create a client & server.
+For debug purposes 'std::string' is used, but it is highly recommended to use a serializer instead of using raw strings to send and receive messages.

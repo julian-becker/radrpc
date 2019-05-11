@@ -1,0 +1,2 @@
+These examples shows how to create a client & server and using all listed  [features](https://github.com/reapler/radrpc#features) of radrpc.
+For debug purposes 'std::string' is used, but it is highly recommended to use a serializer instead of using raw strings to send and receive messages.

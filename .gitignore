@@ -1,0 +1,16 @@
+_revs/
+.ccls-cache/
+.vs/
+.vscode/
+.idea/
+build/
+cmake-build-debug/
+cmake-build-relwithdebinfo-clang/
+snippet/
+tools/ssl/files/
+.directory
+.rnd
+CMakeSettings.json
+compile_commands.json
+gitconfig.txt
+todo.txt
