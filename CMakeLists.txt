@@ -67,18 +67,6 @@ find_package(Boost 1.70 REQUIRED COMPONENTS filesystem system date_time)
 if (NOT Boost_FOUND)
     return()
 endif()
-# CMake doesn't seem to assign these variables on 1.70
-set(Boost_INCLUDE_DIRS $ENV{BOOST_ROOT})
-if ("${Boost_LIBRARIES}" STREQUAL "")
-    set(Boost_LIBRARIES
-        Boost::filesystem
-        Boost::system
-        Boost::date_time)
-    message("Boost libraries are not set, setting it manually to:\n${Boost_LIBRARIES}")
-endif()
-
-
-
 
 if(SUPPORT_SSL)
     find_package(OpenSSL REQUIRED)
