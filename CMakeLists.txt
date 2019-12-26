@@ -4,7 +4,7 @@ if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
     file(COPY "${CMAKE_BINARY_DIR}/compile_commands.json" DESTINATION "${PROJECT_SOURCE_DIR}")
 endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(scripts)
+include(Scripts)
 set(CMAKE_CXX_STANDARD 14)
 set(REPORT_FOLDER "Reports")
 

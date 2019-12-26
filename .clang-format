@@ -15,11 +15,13 @@ BraceWrapping:
 SortIncludes:       false
 MaxEmptyLinesToKeep:    100
 IndentWidth: 4
+PenaltyReturnTypeOnItsOwnLine: 300
 
 BinPackArguments: false
 BinPackParameters: false
 AlignAfterOpenBracket: true
 AllowAllParametersOfDeclarationOnNextLine: false
+AlwaysBreakAfterReturnType: None
 BreakConstructorInitializers: AfterColon
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 IndentCaseLabels: true
