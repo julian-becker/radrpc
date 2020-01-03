@@ -164,7 +164,10 @@ An example on how configure it with CMake can be found [here](https://github.com
 
 ## Building tests and examples
 To build the tests yourself Boost, OpenSSL, CMake & Git are required. 
-Please make sure the environment variables of the used libraries are also set correctly to work with CMake.
+Please make sure the environment variables of the used libraries are also set correctly to work with CMake. 
+The compiled binaries can be quite big, aswell the compilation can take up some memory. 
+Hence it is recommend to change the amount of workers or set the options
+in [CMakeLists.txt](https://github.com/reapler/radrpc/tree/master/CMakeLists.txt#L14).
 ```
 git clone --recursive https://github.com/reapler/radrpc.git
 cd radrpc
