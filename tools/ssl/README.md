@@ -49,8 +49,9 @@ if (ec)
     std::cout << "load_verify_file: " << ec.message() << std::endl;
     return 0;
 }
+```
 
-
+```cpp
 // server
 boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
 boost::system::error_code ec;
