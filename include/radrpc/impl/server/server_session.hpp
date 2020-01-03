@@ -38,10 +38,11 @@
 #include <utility>
 #include <vector>
 
-#include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/beast/http/read.hpp>
+//#include <boost/asio/strand.hpp>
+#include <boost/beast/core/detect_ssl.hpp>
+//#include <boost/beast/core.hpp>
+//#include <boost/beast/websocket.hpp>
+//#include <boost/beast/http/read.hpp>
 
 #include <radrpc/debug.hpp>
 #include <radrpc/types.hpp>

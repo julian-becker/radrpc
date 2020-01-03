@@ -34,7 +34,6 @@
 #include <radrpc/config.hpp>
 #include <radrpc/debug.hpp>
 #include <radrpc/types.hpp>
-#include <radrpc/detail/operations.hpp>
 #include <radrpc/impl/server/server_session.hpp>
 
 namespace radrpc {

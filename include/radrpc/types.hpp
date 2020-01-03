@@ -28,8 +28,10 @@
 #include <string>
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/beast/websocket.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
+#include <boost/beast/websocket/rfc6455.hpp>
+#include <boost/beast/websocket/stream.hpp>
 #ifdef RADRPC_SSL_SUPPORT
 #include <boost/beast/ssl.hpp>
 #endif

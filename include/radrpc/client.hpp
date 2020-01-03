@@ -33,9 +33,6 @@
 #include <thread>
 #include <vector>
 
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-
 #include <radrpc/debug.hpp>
 #include <radrpc/types.hpp>
 #include <radrpc/detail/operations.hpp>
