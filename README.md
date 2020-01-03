@@ -40,10 +40,10 @@ Minimal client:
 ```cpp
 #include  "radrpc.hpp"
 
-// All available remote procedure calls
-enum RpcCommands
+// User defined remote procedure calls
+enum MyRpcCommands
 {
-    RPC_ECHO_MSG,
+    MY_RPC_ECHO_MSG,
 };
 
 int main()
@@ -73,7 +73,7 @@ int main()
     // instead of using raw strings.
     std::string msg;
     std::vector<char> msg_bytes(msg.begin(), msg.end());
-    auto response_bytes = cl.send_recv(RPC_ECHO_MSG, msg_bytes);
+    auto response_bytes = cl.send_recv(MY_RPC_ECHO_MSG, msg_bytes);
     if  (!response_bytes.empty())
     {
         std::string response(
@@ -94,10 +94,10 @@ Minimal server:
 ```cpp
 #include  "radrpc.hpp"
 
-// All available remote procedure calls
-enum RpcCommands
+// User defined remote procedure calls
+enum MyRpcCommands
 {
-    RPC_ECHO_MSG,
+    MY_RPC_ECHO_MSG,
 };
 
 int main()
@@ -120,7 +120,7 @@ int main()
 
     server srv(cfg, timeout, default_session_cfg);
 
-    srv.bind(RPC_ECHO_MSG, [&](session_context *ctx) {
+    srv.bind(MY_RPC_ECHO_MSG, [&](session_context *ctx) {
         // Of course you would use a serializer
         // instead of using raw strings.
         std::string received(ctx->data(), ctx->data()  + ctx->size());

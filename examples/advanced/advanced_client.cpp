@@ -27,15 +27,15 @@
 
 
 
-// All available remote procedure calls
-enum RpcCommands
+// User defined remote procedure calls
+enum MyRpcCommands
 {
-    RPC_SEND,
-    RPC_ECHO_MSG,
-    RPC_BROADCAST_ALL,
-    RPC_BROADCAST_SINGLE,
-    RPC_LISTEN_BROADCAST,
-    RPC_SERVER_SHUTDOWN,
+    MY_RPC_SEND,
+    MY_RPC_ECHO_MSG,
+    MY_RPC_BROADCAST_ALL,
+    MY_RPC_BROADCAST_SINGLE,
+    MY_RPC_LISTEN_BROADCAST,
+    MY_RPC_SERVER_SHUTDOWN,
 };
 
 inline std::mutex &log_mtx()
@@ -87,7 +87,7 @@ int main()
 
     // Pass a handler for receiving server broadcast with the specified id.
     // Multiple handlers can be set with different ids.
-    cl.listen_broadcast(RPC_LISTEN_BROADCAST, broadcast_handler);
+    cl.listen_broadcast(MY_RPC_LISTEN_BROADCAST, broadcast_handler);
 
     // Set the handshake which will be sent on each (re)connect
     cl.set_handshake_request(req);
@@ -118,7 +118,7 @@ int main()
         // This will also fallback.
         cl.set_response_timeout(std::chrono::seconds(2));
 
-        if (cl.send(RPC_SEND, msg_bytes))
+        if (cl.send(MY_RPC_SEND, msg_bytes))
         {
             LOG("Message sent.");
         }
@@ -129,7 +129,7 @@ int main()
         std::string msg;
         std::getline(std::cin, msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
-        auto response_bytes = cl.send_recv(RPC_ECHO_MSG, msg_bytes);
+        auto response_bytes = cl.send_recv(MY_RPC_ECHO_MSG, msg_bytes);
         if (response_bytes)
         {
             std::string response(response_bytes.data(),
@@ -143,7 +143,7 @@ int main()
         std::string msg;
         std::getline(std::cin, msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
-        auto response_bytes = cl.send_recv(RPC_BROADCAST_ALL, msg_bytes);
+        auto response_bytes = cl.send_recv(MY_RPC_BROADCAST_ALL, msg_bytes);
         if (response_bytes)
         {
             LOG("Successfully broadcast the message");
@@ -155,7 +155,7 @@ int main()
         std::string msg;
         std::getline(std::cin, msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
-        auto response_bytes = cl.send_recv(RPC_BROADCAST_ALL, msg_bytes);
+        auto response_bytes = cl.send_recv(MY_RPC_BROADCAST_ALL, msg_bytes);
         if (response_bytes)
         {
             LOG("Successfully broadcast the message");
@@ -165,7 +165,7 @@ int main()
     LOG("Press enter to shutdown server.");
     {
         std::cin.get();
-        cl.send(RPC_SERVER_SHUTDOWN, std::vector<char>());
+        cl.send(MY_RPC_SERVER_SHUTDOWN, std::vector<char>());
     }
 
 

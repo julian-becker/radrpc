@@ -28,10 +28,10 @@
 
 
 
-// All available remote procedure calls
-enum RpcCommands
+// User defined remote procedure calls
+enum MyRpcCommands
 {
-    RPC_ECHO_MSG,
+    MY_RPC_ECHO_MSG,
 };
 
 inline std::mutex &log_mtx()
@@ -130,7 +130,7 @@ int main()
     // Let the server own ssl context.
     server srv(cfg, timeout, default_session_cfg, std::move(ssl_ctx));
 
-    srv.bind(RPC_ECHO_MSG, [&](session_context *ctx) {
+    srv.bind(MY_RPC_ECHO_MSG, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
         LOG("Request from " << ctx->remote_host << " Message: " << received);
         ctx->response =

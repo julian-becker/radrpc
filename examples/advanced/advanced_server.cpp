@@ -27,15 +27,15 @@
 
 
 
-// All available remote procedure calls
-enum RpcCommands
+// User defined remote procedure calls
+enum MyRpcCommands
 {
-    RPC_SEND,
-    RPC_ECHO_MSG,
-    RPC_BROADCAST_ALL,
-    RPC_BROADCAST_SINGLE,
-    RPC_LISTEN_BROADCAST,
-    RPC_SERVER_SHUTDOWN,
+    MY_RPC_SEND,
+    MY_RPC_ECHO_MSG,
+    MY_RPC_BROADCAST_ALL,
+    MY_RPC_BROADCAST_SINGLE,
+    MY_RPC_LISTEN_BROADCAST,
+    MY_RPC_SERVER_SHUTDOWN,
 };
 
 inline std::mutex &log_mtx()
@@ -64,7 +64,7 @@ void broadcast(radrpc::server *p_srv)
     std::vector<char> msg_bytes(msg.begin(), msg.end());
     while (broadcast_run)
     {
-        p_srv->broadcast(RPC_LISTEN_BROADCAST, msg_bytes);
+        p_srv->broadcast(MY_RPC_LISTEN_BROADCAST, msg_bytes);
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
@@ -231,42 +231,42 @@ int main()
         LOG("disconnect: [IP:" << info.remote_host << "]");
     });
 
-    srv.bind(RPC_SEND, [&](session_context *ctx) {
+    srv.bind(MY_RPC_SEND, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
         LOG("RPC_SEND: " << received);
     });
 
-    srv.bind(RPC_ECHO_MSG, [&](session_context *ctx) {
+    srv.bind(MY_RPC_ECHO_MSG, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
         LOG("RPC_ECHO_MSG: " << received);
         ctx->response =
             std::vector<char>(ctx->data(), ctx->data() + ctx->size());
     });
 
-    srv.bind(RPC_BROADCAST_ALL, [&](session_context *ctx) {
+    srv.bind(MY_RPC_BROADCAST_ALL, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
         std::string msg("client " + std::to_string(ctx->id) + " writes: " +
                         received);
         LOG("RPC_BROADCAST_ALL: Broadcast this message:\n" << msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
-        srv.broadcast(RPC_LISTEN_BROADCAST, msg_bytes);
+        srv.broadcast(MY_RPC_LISTEN_BROADCAST, msg_bytes);
         ctx->response.push_back(0x0);
     });
 
-    srv.bind(RPC_BROADCAST_SINGLE, [&](session_context *ctx) {
+    srv.bind(MY_RPC_BROADCAST_SINGLE, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
         std::string msg("client " + std::to_string(ctx->id) + " write:\n" +
                         received);
-        LOG("RPC_BROADCAST_SINGLE: Broadcast this message:\n" << msg);
+        LOG("MY_RPC_BROADCAST_SINGLE: Broadcast this message:\n" << msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
         // In a real-world case you would keep a 
         // list of session ids to send later
         std::vector<uint64_t> send_to = {ctx->id};
-        srv.broadcast(RPC_LISTEN_BROADCAST, msg_bytes, send_to);
+        srv.broadcast(MY_RPC_LISTEN_BROADCAST, msg_bytes, send_to);
         ctx->response.push_back(0x0);
     });
 
-    srv.bind(RPC_SERVER_SHUTDOWN, [&](session_context *ctx) {
+    srv.bind(MY_RPC_SERVER_SHUTDOWN, [&](session_context *ctx) {
         // This handler should only contain the shutdown procedure.
         LOG("RPC_SERVER_SHUTDOWN");
         broadcast_run = false;
