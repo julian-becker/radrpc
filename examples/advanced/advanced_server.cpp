@@ -115,8 +115,7 @@ bool on_accept(radrpc::session_info &info)
     }
 
     // Find custom field 'key'.
-    auto key_itr =
-        info.request_handshake.find("key");
+    auto key_itr = info.request_handshake.find("key");
     if (key_itr != info.request_handshake.end())
     {
         LOG("on_accept: key found:"
@@ -134,7 +133,7 @@ bool on_accept(radrpc::session_info &info)
             return false;
         }
     }
-    // If this field doesn't exist, you may reject this session
+    // If this field doesn't exist, you may reject this session.
     else
     {
         // Field not found, reject this session.
@@ -206,7 +205,7 @@ int main()
     cfg.workers = 3;
     cfg.max_sessions = 1000;
     cfg.max_handshake_bytes = 0xFFFF;
-    cfg.mode = server_mode::plain;
+    cfg.mode = stream_mode::plain;
 
     server_timeout timeout;
     timeout.handshake_or_close_timeout = std::chrono::seconds(5);
@@ -245,8 +244,8 @@ int main()
 
     srv.bind(MY_RPC_BROADCAST_ALL, [&](session_context *ctx) {
         std::string received(ctx->data(), ctx->data() + ctx->size());
-        std::string msg("client " + std::to_string(ctx->id) + " writes: " +
-                        received);
+        std::string msg("client " + std::to_string(ctx->id) +
+                        " writes: " + received);
         LOG("RPC_BROADCAST_ALL: Broadcast this message:\n" << msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
         srv.broadcast(MY_RPC_LISTEN_BROADCAST, msg_bytes);
@@ -259,7 +258,7 @@ int main()
                         received);
         LOG("MY_RPC_BROADCAST_SINGLE: Broadcast this message:\n" << msg);
         std::vector<char> msg_bytes(msg.begin(), msg.end());
-        // In a real-world case you would keep a 
+        // In a real-world case you would keep a
         // list of session ids to send later
         std::vector<uint64_t> send_to = {ctx->id};
         srv.broadcast(MY_RPC_LISTEN_BROADCAST, msg_bytes, send_to);

@@ -1,0 +1,8 @@
+function (set_option VARIABLE DESCRIPTION VALUE)
+    if (CACHE_OPTION)
+        option(${VARIABLE} "${DESCRIPTION}" ${VALUE})
+    else()
+        unset(${VARIABLE} CACHE)
+        option(${VARIABLE} "${DESCRIPTION}" ${VALUE})
+    endif()
+endfunction()

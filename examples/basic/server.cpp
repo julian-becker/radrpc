@@ -61,7 +61,7 @@ int main()
     cfg.workers = 2;
     cfg.max_sessions = 1000;
     cfg.max_handshake_bytes = 0xFFFF;
-    cfg.mode = server_mode::plain;
+    cfg.mode = stream_mode::plain;
 
     server_timeout timeout;
     timeout.handshake_or_close_timeout = std::chrono::seconds(5);

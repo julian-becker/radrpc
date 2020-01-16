@@ -22,8 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#include "radrpc.hpp"
+#include <iostream>
+#include <iomanip>
+#include <mutex>
 
+//#include "radrpc.hpp"
+#include <radrpc/client.hpp>
 
 
 
@@ -67,7 +71,7 @@ int main()
     timeout.send_timeout = std::chrono::seconds(1);
     timeout.response_timeout = std::chrono::seconds(1);
 
-    client<client_mode::plain> cl(cfg, timeout);
+    client::plain cl(cfg, timeout);
 
     LOG("Press enter to connect.");
     std::cin.get();
@@ -83,7 +87,8 @@ int main()
     auto response_bytes = cl.send_recv(MY_RPC_ECHO_MSG, msg_bytes);
     if (!response_bytes.empty())
     {
-        std::string response(response_bytes.data(), response_bytes.data() + response_bytes.size());
+        std::string response(response_bytes.data(),
+                             response_bytes.data() + response_bytes.size());
         LOG("Received message from server: " << response);
     }
 

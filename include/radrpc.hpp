@@ -32,8 +32,7 @@
 
 #include <radrpc/client.hpp>
 #include <radrpc/config.hpp>
-#include <radrpc/debug.hpp>
+#include <radrpc/debug/log.hpp>
 #include <radrpc/server.hpp>
-#include <radrpc/types.hpp>
 
 #endif // RADRPC_RADRPC_HPP

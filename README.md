@@ -29,7 +29,7 @@ The following features are available:
 - **Reconnect** Adjustable reconnect attempts if disconnected.
 - **Session based** Each connection represents a session with an id which allows to operate on.
 - **Config friendly** Advanced configurations for client, sessions and server.
-- **Customizable handshake** Adjust & inspect the handshake for validating the session or passing additional data for e.g. a key
+- **Customizable handshake** Adjust & inspect the handshake for validating the session or passing additional data for e.g. a key.
 - **SSL** Allows to use an encrypted stream with client and server. The server supports a dual mode for accepting only plain, ssl or both streams on the same port.
 - **Broadcast** Send messages to a single session or to all sessions specified with an id.
 
@@ -62,7 +62,7 @@ int main()
     timeout.send_timeout  = std::chrono::seconds(1);
     timeout.response_timeout  = std::chrono::seconds(1);
     
-    client<client_mode::plain> cl(cfg, timeout);
+    client::plain cl(cfg, timeout);
 
     // Connect manually.
     // if not used, 'send()' / 'send_recv()'
@@ -109,7 +109,7 @@ int main()
     cfg.workers  =  2;
     cfg.max_sessions  =  1000;
     cfg.max_handshake_bytes  =  0xFFFF;
-    cfg.mode = server_mode::plain;
+    cfg.mode = stream_mode::plain;
     
     server_timeout timeout;
     timeout.handshake_or_close_timeout  = std::chrono::seconds(5);

@@ -61,7 +61,7 @@ int main()
     using namespace radrpc;
 
     client_config cfg;
-	cfg.host_address = "127.0.0.1";
+    cfg.host_address = "127.0.0.1";
     cfg.port = 3377;
     cfg.max_read_bytes = 0xFFFFFFFF;
     cfg.send_attempts = 0;
@@ -83,7 +83,7 @@ int main()
         LOG("broadcast_handler: Message from server: " << received);
     };
 
-    client<client_mode::plain> cl(cfg, timeout);
+    client::plain cl(cfg, timeout);
 
     // Pass a handler for receiving server broadcast with the specified id.
     // Multiple handlers can be set with different ids.
@@ -97,10 +97,19 @@ int main()
 
     LOG("Press enter to connect.");
     std::cin.get();
-    // Connect manually. 
-    // if not used, 'send()' / 'send_recv()' 
+    // Connect manually.
+    // if not used, 'send()' / 'send_recv()'
     // will consume an attempt.
     cl.connect();
+
+
+
+
+    // After connect the received handshake can be inspected, if desired.
+    LOG("Received handshake:\n" << cl.get_handshake_response());
+
+
+
 
     LOG("Please enter your send message:");
     {

@@ -2,8 +2,8 @@
 If you are going to use the stress tests, you may adjust these functions to your needs:
 ```cpp
 // stress_client.cpp
-client_settings default_client_set();
-server_settings default_server_set();
+test_suite::client_set default_client_set();
+test_suite::server_set default_server_set();
 client_config default_client_config();
 client_timeout default_client_timeout();
 run_time();

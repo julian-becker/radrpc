@@ -137,7 +137,7 @@ int main()
 
 
     client_config cfg;
-	cfg.host_address = "127.0.0.1";
+    cfg.host_address = "127.0.0.1";
     cfg.port = 3377;
     cfg.max_read_bytes = 0xFFFFFFFF;
     cfg.send_attempts = 0;
@@ -149,7 +149,7 @@ int main()
     timeout.response_timeout = std::chrono::seconds(1);
 
     // Let the client own ssl context.
-    client<client_mode::ssl> cl(cfg, timeout, std::move(ssl_ctx));
+    client::ssl cl(cfg, timeout, std::move(ssl_ctx));
 
     LOG("Press enter to connect.");
     std::cin.get();
