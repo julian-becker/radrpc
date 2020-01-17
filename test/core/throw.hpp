@@ -45,7 +45,7 @@ namespace core {
         std::stringstream ss;                                                  \
         ss << MSG << "\nIn " << __FUNCTION__ << " " << RAD_FILENAME << ":"     \
            << __LINE__;                                                        \
-        RAD_FAIL(ss.str().c_str());                                               \
+        TEST_INFO_FAIL(ss.str().c_str());                                               \
         std::raise(SIGTERM);                                                   \
     } while (false)
 

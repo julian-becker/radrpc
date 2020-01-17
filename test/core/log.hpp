@@ -22,9 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef RADRPC_TEST_CORE_LOG_HPP
-#define RADRPC_TEST_CORE_LOG_HPP
+#ifndef TEST_TEST_CORE_LOG_HPP
+#define TEST_TEST_CORE_LOG_HPP
 
+#include <iostream>
+#include <iomanip>
 #include <mutex>
 
 #include <test/dep/termcolor.hpp>
@@ -32,31 +34,51 @@
 namespace test {
 namespace core {
 
-inline std::mutex &rad_log_mtx()
+inline std::mutex &log_mtx()
 {
-    static std::mutex m_rad_log_mtx;
-    return m_rad_log_mtx;
+    static std::mutex m_log_mtx;
+    return m_log_mtx;
 }
-#define RAD_INFO(str)                                                          \
+
+#ifdef _WIN32
+#define TEST_FILENAME                                                          \
+    (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+#define TEST_FILENAME                                                          \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define TEST_INFO(str)                                                         \
     do                                                                         \
     {                                                                          \
-        rad_log_mtx().lock();                                                 \
+        log_mtx().lock();                                                      \
         std::cout << "[" << termcolor::cyan << "INFO" << termcolor::reset      \
                   << "] " << str << std::endl;                                 \
-        rad_log_mtx().unlock();                                               \
+        log_mtx().unlock();                                                    \
     } while (false)
-#define RAD_FAIL(str)                                                          \
+
+#define TEST_DINFO(str)                                                        \
     do                                                                         \
     {                                                                          \
-        rad_log_mtx().lock();                                                 \
+        log_mtx().lock();                                                      \
+        std::cout << "[" << termcolor::cyan << "INFO" << termcolor::reset      \
+                  << "] " << __FUNCTION__ << " " << TEST_FILENAME << ":"       \
+                  << __LINE__ << "\t" << str << std::endl;                     \
+        log_mtx().unlock();                                                    \
+    } while (false)
+
+#define TEST_INFO_FAIL(str)                                                    \
+    do                                                                         \
+    {                                                                          \
+        log_mtx().lock();                                                      \
         std::cout << "[" << termcolor::red << "FAILED" << termcolor::reset     \
                   << "] " << str << std::endl;                                 \
-        rad_log_mtx().unlock();                                               \
+        log_mtx().unlock();                                                    \
     } while (false)
-inline void rad_log_lock() { rad_log_mtx().lock(); }
-inline void rad_log_unlock() { rad_log_mtx().unlock(); }
+inline void rad_log_lock() { log_mtx().lock(); }
+inline void rad_log_unlock() { log_mtx().unlock(); }
 
 } // namespace core
 } // namespace test
 
-#endif // RADRPC_TEST_CORE_LOG_HPP
+#endif // TEST_TEST_CORE_LOG_HPP

@@ -33,9 +33,17 @@ foreach(SANTIZER ${SANTIZERS})
 
     message("Set target: radrpc_${SANTIZER}")
 
+    # Add libc++ flag & link instrumented if memory sanitizer is used
+    set(COMPILER_FLAGS_ "${COMPILER_FLAGS}")
+    set(LINK_LIBRARIES_ "${LINK_LIBRARIES}")
+    if ("${SANTIZER}" STREQUAL "memory" AND INSTRUMENTED_FOUND)
+        set(COMPILER_FLAGS_ ${COMPILER_FLAGS_} ${INSTRUMENTED_COMPILER_FLAGS})
+        set(LINK_LIBRARIES_ ${INSTRUMENTED_LINK_LIBRARIES})
+    endif()
+
     # Build obj
     add_library(radrpc_obj_${SANTIZER} OBJECT ${RADRPC_SRC})
-    target_compile_options(radrpc_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS} -fsanitize=${SANTIZER})
+    target_compile_options(radrpc_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
     set_target_properties(radrpc_obj_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
     if (BUILD_SHARED OR BUILD_INTERNAL_SHARED)
         set_property(TARGET radrpc_obj_${SANTIZER} PROPERTY POSITION_INDEPENDENT_CODE 1)
@@ -44,11 +52,13 @@ foreach(SANTIZER ${SANTIZERS})
 
     # Build static library
     add_library(radrpc_static_${SANTIZER} STATIC $<TARGET_OBJECTS:radrpc_obj_${SANTIZER}>)
+    target_link_libraries(radrpc_static_${SANTIZER} ${LINK_LIBRARIES_})
     set_target_properties(radrpc_static_${SANTIZER} PROPERTIES OUTPUT_NAME "radrpc_${SANTIZER}")
 
     # Build shared library
     if (BUILD_SHARED OR BUILD_INTERNAL_SHARED)
         add_library(radrpc_shared_${SANTIZER} SHARED $<TARGET_OBJECTS:radrpc_obj_${SANTIZER}>)
+        target_link_libraries(radrpc_shared_${SANTIZER} ${LINK_LIBRARIES_})
         set_target_properties(radrpc_shared_${SANTIZER} PROPERTIES OUTPUT_NAME "radrpc_${SANTIZER}")
     endif()
 

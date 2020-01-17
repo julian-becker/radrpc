@@ -33,22 +33,22 @@ namespace core {
 inline void sanitizer_info()
 {
 #ifdef ASAN
-    RAD_INFO("AddressSanitizer active");
+    TEST_INFO("AddressSanitizer active");
     return;
 #endif
 #ifdef UBSAN
-    RAD_INFO("UndefinedBehaviorSanitizer active");
+    TEST_INFO("UndefinedBehaviorSanitizer active");
     return;
 #endif
 #ifdef MSAN
-    RAD_INFO("MemorySanitizer active");
+    TEST_INFO("MemorySanitizer active");
     return;
 #endif
 #ifdef TSAN
-    RAD_INFO("ThreadSanitizer active");
+    TEST_INFO("ThreadSanitizer active");
     return;
 #endif
-    RAD_INFO("No sanitizer active");
+    TEST_INFO("No sanitizer active");
 }
 
 } // namespace common

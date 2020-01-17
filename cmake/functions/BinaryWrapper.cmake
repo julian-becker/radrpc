@@ -214,3 +214,28 @@ else
 fi
 ")
 endfunction()
+
+
+
+
+function (create_script_msan BINARY REPORT_FOLDER)
+    file(WRITE ${CMAKE_BINARY_DIR}/s_${BINARY}.sh
+"#!/bin/bash
+
+symbolizer_path=\"\"
+for file in $(find /usr/lib/llvm* -name 'llvm-symbolizer')
+do
+    symbolizer_path=\"$file\"
+done
+export MSAN_SYMBOLIZER_PATH=\"$symbolizer_path\"
+
+if [ -z \"${REPORT_FOLDER}\" ]
+then
+    ./${BINARY}
+else
+    FILE_OUT=\"[${BINARY}]$(date +%d-%m-%Y[%Hh%Mm%Ss]).txt\"
+    mkdir -p \"${REPORT_FOLDER}\"
+    ./${BINARY} 2>${REPORT_FOLDER}/$FILE_OUT
+fi
+")
+endfunction()

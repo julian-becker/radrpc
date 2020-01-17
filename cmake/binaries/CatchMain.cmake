@@ -26,9 +26,15 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
             message("Set target: catch_main_${SANTIZER}")
 
+            # Add libc++ flag if memory sanitizer
+            set(COMPILER_FLAGS_ "${COMPILER_FLAGS}")
+            if ("${SANTIZER}" STREQUAL "memory" AND INSTRUMENTED_FOUND)
+                set(COMPILER_FLAGS_ ${COMPILER_FLAGS_} ${INSTRUMENTED_COMPILER_FLAGS})
+            endif()
+
             # Build obj
             add_library(catch_main_obj_${SANTIZER} OBJECT ${CATCH_MAIN_SRC})
-            target_compile_options(catch_main_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS} -fsanitize=${SANTIZER})
+            target_compile_options(catch_main_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
             set_target_properties(catch_main_obj_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)
                 set_property(TARGET catch_main_obj_${SANTIZER} PROPERTY POSITION_INDEPENDENT_CODE 1)
@@ -38,24 +44,20 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
         endforeach()
         endif()
 
-        if (BIN_MSAN AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-
-        endif()
-
         # Build raw binary with BUILD_VALGRIND
         if(BIN_VALGRIND)
 
             message("Set target: catch_main_valgrind")
 
             # Build obj
-            add_library(catch_main_valgrind_obj OBJECT ${CATCH_MAIN_SRC})
-            target_compile_options(catch_main_valgrind_obj PRIVATE ${COMPILER_FLAGS})
-            set_target_properties(catch_main_valgrind_obj PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
+            add_library(catch_main_obj_valgrind OBJECT ${CATCH_MAIN_SRC})
+            target_compile_options(catch_main_obj_valgrind PRIVATE ${COMPILER_FLAGS})
+            set_target_properties(catch_main_obj_valgrind PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)
-                set_property(TARGET catch_main_valgrind_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
+                set_property(TARGET catch_main_obj_valgrind PROPERTY POSITION_INDEPENDENT_CODE 1)
             endif()
-            target_compile_definitions(catch_main_valgrind_obj PRIVATE PRIVATE BUILD_VALGRIND)
-            set_definitions(catch_main_valgrind_obj "")
+            target_compile_definitions(catch_main_obj_valgrind PRIVATE PRIVATE BUILD_VALGRIND)
+            set_definitions(catch_main_obj_valgrind "")
 
         endif()
 

@@ -8,5 +8,6 @@ endif()
 if(BIN_TSAN)
     set(SANTIZERS ${SANTIZERS} thread)
 endif()
-# Memory sanitizer is extra, 
-# since it needs to be linked with instrumented libraries
+if(BIN_MSAN AND INSTRUMENTED_FOUND)
+    set(SANTIZERS ${SANTIZERS} memory)
+endif()

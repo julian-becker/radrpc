@@ -23,18 +23,20 @@
  */
 
 #ifdef RADRPC_SSL_SUPPORT
+
+#include <radrpc/client.hpp>
+#include <radrpc/impl/client/connector.hpp>
+#include "radrpc/common/connection_state.hpp"
+
+#include "catch.hpp"
+
 #include <test/core/defaults.hpp>
+#include <test/core/log.hpp>
 #include <test/core/sleep.hpp>
 #include <test/core/ssl_context.hpp>
 #include <test/unit/construct/rpc_command.hpp>
 #include <test/unit/construct/client.hpp>
 #include <test/unit/construct/server.hpp>
-
-#include "catch.hpp"
-
-#include <radrpc/client.hpp>
-#include <radrpc/impl/client/connector.hpp>
-#include "radrpc/common/connection_state.hpp"
 
 using namespace test::unit::construct;
 
@@ -49,6 +51,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("connecting / disconnecting")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         cl->disconnect();
@@ -62,12 +65,14 @@ TEST_CASE("ssl client implementation")
 
     SECTION("connect attempts offline (timeout connect)")
     {
+        TEST_DINFO("");
         auto cl = create_ssl_client();
         REQUIRE_FALSE(cl->connect(3, std::chrono::milliseconds(100)));
     }
 
     SECTION("connect attempts offline (timeout handshake")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         // The resulted wait time can also include the timeout from handshake
@@ -77,6 +82,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("connect attempts")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         srv->async_start();
@@ -89,6 +95,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("reconnect")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -107,6 +114,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -120,12 +128,14 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send offline")
     {
+        TEST_DINFO("");
         auto cl = create_ssl_client();
         REQUIRE_FALSE(cl->send(UNIT_RPC_SEND, std::vector<char>()));
     }
 
     SECTION("send fill queue & process")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -147,6 +157,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send attempts")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -162,6 +173,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send attempts offline")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         {
             auto cfg = default_client_config();
@@ -175,6 +187,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send exceed transfer")
     {
+        TEST_DINFO("");
         auto session_cfg = default_session_config();
         auto srv = create_ssl_server();
         srv->async_start();
@@ -193,6 +206,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send timeout")
     {
+        TEST_DINFO("");
         auto session_cfg = default_session_config();
         auto srv = create_ssl_server();
         srv->async_start();
@@ -214,6 +228,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -228,6 +243,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv offline")
     {
+        TEST_DINFO("");
         auto cl = create_ssl_client();
         REQUIRE_FALSE(
             (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
@@ -235,6 +251,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv fill queue & process")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -257,6 +274,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv attempts")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -273,6 +291,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv attempts offline")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         {
             auto cfg = default_client_config();
@@ -287,6 +306,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv exceed transfer")
     {
+        TEST_DINFO("");
         auto session_cfg = default_session_config();
         auto srv = create_ssl_server();
         srv->async_start();
@@ -305,6 +325,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv send timeout")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -321,6 +342,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("send_recv response timeout")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -342,6 +364,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("ping")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -354,6 +377,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("ping timeout")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -368,6 +392,7 @@ TEST_CASE("ssl client implementation")
 
     SECTION("ping offline")
     {
+        TEST_DINFO("");
         auto cl = create_ssl_client();
         {
             auto srv = create_ssl_server();
@@ -385,6 +410,7 @@ TEST_CASE("ssl client connect")
 {
     SECTION("close io stopped")
     {
+        TEST_DINFO("");
         // Special case for calling close in client_connector while io was
         // stopped. This happened while running the stress tests
         auto srv = create_ssl_server();

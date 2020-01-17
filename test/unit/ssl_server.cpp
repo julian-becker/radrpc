@@ -25,19 +25,20 @@
 #ifdef RADRPC_SSL_SUPPORT
 #include <csignal>
 
+#include <radrpc/client.hpp>
+#include <radrpc/impl/client/connector.hpp>
+#include "radrpc/common/connection_state.hpp"
+
+#include "catch.hpp"
+
 #include <test/core/bytes.hpp>
 #include <test/core/defaults.hpp>
+#include <test/core/log.hpp>
 #include <test/core/sleep.hpp>
 #include <test/core/ssl_context.hpp>
 #include <test/unit/construct/rpc_command.hpp>
 #include <test/unit/construct/client.hpp>
 #include <test/unit/construct/server.hpp>
-
-#include "catch.hpp"
-
-#include <radrpc/client.hpp>
-#include <radrpc/impl/client/connector.hpp>
-#include "radrpc/common/connection_state.hpp"
 
 using namespace test::unit::construct;
 
@@ -59,6 +60,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("start & stop")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         std::thread t1([&] {
             sleep_ms(defaults::sleep_high_delay_ms);
@@ -71,6 +73,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("start & remote stop")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         std::thread t1([&] {
@@ -87,6 +90,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("restart & remote stop")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         std::thread t1([&] {
@@ -117,6 +121,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("async start & SIGTERM")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         std::thread t1([&] {
             sleep_ms(defaults::sleep_high_delay_ms);
@@ -129,6 +134,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("async start & stop")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         srv->stop();
@@ -136,6 +142,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("async start & remote stop")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -151,6 +158,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("async start & SIGTERM")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -164,6 +172,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("broadcast all")
     {
+        TEST_DINFO("");
         std::vector<char> msg(10, 0x1);
         std::atomic<int> received = ATOMIC_VAR_INIT(0);
         std::atomic<bool> msg_ok = ATOMIC_VAR_INIT(true);
@@ -195,6 +204,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("broadcast to session id")
     {
+        TEST_DINFO("");
         std::vector<char> msg(sizeof(uint64_t), 0x0);
         std::atomic<int> received = ATOMIC_VAR_INIT(0);
         std::atomic<uint64_t> session_id = ATOMIC_VAR_INIT(0);
@@ -239,6 +249,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("rebind function")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         REQUIRE_THROWS(srv->bind(UNIT_RPC_SEND_RECV,
                                  [&](radrpc::session_context *ctx) {}));
@@ -247,6 +258,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("bind while running")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -267,6 +279,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("bind disconnect")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto disconnected = false;
         REQUIRE(srv->bind_disconnect(
@@ -281,6 +294,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("bind accept session_info")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto is_ok = false;
         REQUIRE(srv->bind_accept([&](radrpc::session_info &info) {
@@ -298,6 +312,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("bind accept customized handshake")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         handshake_request req;
@@ -341,6 +356,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("reject accept")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto rejected = false;
         REQUIRE(srv->bind_accept([&](const radrpc::session_info &info) {
@@ -357,6 +373,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("reject listen")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto rejected = false;
         REQUIRE(srv->bind_listen([&](const std::string &ip) {
@@ -378,6 +395,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("close session in bound function")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -393,6 +411,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("transfer limit")
     {
+        TEST_DINFO("");
         auto session_cfg = default_session_config();
         auto srv = create_ssl_server();
         srv->async_start();
@@ -410,6 +429,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("handshake transfer limit")
     {
+        TEST_DINFO("");
         auto cfg = default_server_config();
         // This limit will affect the whole request, not just the custom fields
         cfg.max_handshake_bytes = 100;
@@ -436,6 +456,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("sessions limit")
     {
+        TEST_DINFO("");
         auto srv_cfg = default_server_config();
         auto srv = create_ssl_server();
         srv->async_start();
@@ -455,6 +476,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("connections count")
     {
+        TEST_DINFO("");
         auto srv = create_ssl_server();
         auto cl = create_ssl_client();
         srv->async_start();
@@ -472,6 +494,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("server mode ssl only") // plain already tested
     {
+        TEST_DINFO("");
         auto cfg = default_server_config();
         cfg.mode = stream_mode::ssl;
         auto srv = create_ssl_server(cfg);
@@ -486,6 +509,7 @@ TEST_CASE("ssl server implementation")
 
     SECTION("server mode dual")
     {
+        TEST_DINFO("");
         auto cfg = default_server_config();
         cfg.mode = stream_mode::ssl | stream_mode::plain;
         auto srv = create_ssl_server(cfg);

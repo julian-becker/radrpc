@@ -73,12 +73,12 @@ int main()
             data->init_test_data(srv_set->test_entries);
             broadcast->set_cfg(*srv_set);
             broadcast->run();
-            RAD_INFO("rpc_command::init: Done");
+            TEST_INFO("rpc_command::init: Done");
             ctx->response.push_back(0x0);
         }
         else
         {
-            RAD_INFO("rpc_command::init: Invalid test_suite::server_set size "
+            TEST_INFO("rpc_command::init: Invalid test_suite::server_set size "
                      << ctx->size() << "/" << sizeof(test_suite::server_set));
         }
     });
@@ -129,7 +129,7 @@ int main()
         }
         else
         {
-            RAD_INFO("on_accept: invalid handshake request:\n"
+            TEST_INFO("on_accept: invalid handshake request:\n"
                   << info.request_handshake);
             stop_server();
             return false;
@@ -160,7 +160,7 @@ int main()
         auto ec = data->data_entry_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            RAD_INFO("STRESS_RPC_ECHO: invalid " << (int)ec);
+            TEST_INFO("STRESS_RPC_ECHO: invalid " << (int)ec);
             stop_server();
             return;
         }
@@ -176,7 +176,7 @@ int main()
         auto ec = data->data_entry_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            RAD_INFO("rpc_command::send: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send: invalid " << (int)ec);
             stop_server();
             return;
         }
@@ -189,7 +189,7 @@ int main()
         auto ec = data->data_entry_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            RAD_INFO("rpc_command::send_recv: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send_recv: invalid " << (int)ec);
             stop_server();
             return;
         }
@@ -205,7 +205,7 @@ int main()
         auto ec = data->data_entry_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            RAD_INFO("rpc_command::send_broadcast: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send_broadcast: invalid " << (int)ec);
             stop_server();
             return;
         }

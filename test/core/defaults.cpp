@@ -44,8 +44,8 @@ const int defaults::response_timeout_ms = 1000;
 
 #else
 
-const int defaults::sleep_low_delay_ms = 20;
-const int defaults::sleep_high_delay_ms = 400;
+const int defaults::sleep_low_delay_ms = 30;
+const int defaults::sleep_high_delay_ms = 500;
 const int defaults::handshake_or_close_timeout_ms = 400;
 const int defaults::send_timeout_ms = 200;
 const int defaults::response_timeout_ms = 200;

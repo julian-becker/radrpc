@@ -1,4 +1,8 @@
 if (SUPPORT_SSL)
+    if (INSTRUMENTED_FOUND)
+        include_directories(
+                "${LIBCPP_INCLUDE_DIR}")
+    endif()
     include_directories(
             "${PROJECT_SOURCE_DIR}"
             "${PROJECT_SOURCE_DIR}/include/"

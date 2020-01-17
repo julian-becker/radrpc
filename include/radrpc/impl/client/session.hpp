@@ -136,7 +136,7 @@ template <class Derived> class session
         m_ping = false;
         if (ec)
         {
-            RADRPC_LOG("session::on_ping: " << ec.message());
+            RADRPC_LOG("client::session::on_ping: " << ec.message());
             return;
         }
     }
@@ -200,13 +200,13 @@ template <class Derived> class session
     {
         if (ec || m_close || m_close_received || m_read_error)
         {
-            RADRPC_LOG("session::on_write: " << ec.message());
+            RADRPC_LOG("client::session::on_write: " << ec.message());
             m_queue.clear();
             m_write_error = true;
             derived().close_session();
             return;
         }
-        RADRPC_LOG("session::on_write: " << bytes_transferred
+        RADRPC_LOG("client::session::on_write: " << bytes_transferred
                                          << "bytes written");
         // Continue writing til it is empty
         if (m_queue.write_next())
@@ -236,7 +236,7 @@ template <class Derived> class session
     {
         if (ec || m_close_received)
         {
-            RADRPC_LOG("session::on_read: " << ec.message());
+            RADRPC_LOG("client::session::on_read: " << ec.message());
             m_cache.clear();
             m_read_error = true;
             derived().close_session();
@@ -264,7 +264,7 @@ template <class Derived> class session
         }
         else
         {
-            RADRPC_LOG("session::on_read: Invalid buffer");
+            RADRPC_LOG("client::session::on_read: Invalid buffer");
         }
 
         m_cache.remove_obsolete();
@@ -281,7 +281,7 @@ template <class Derived> class session
         boost::ignore_unused(payload);
         if (kind == websocket::frame_type::pong)
         {
-            RADRPC_LOG("session::on_control_callback: Pong received");
+            RADRPC_LOG("client::session::on_control_callback: Pong received");
             {
                 std::unique_lock<std::mutex> lock(m_ping_mtx);
                 m_pong = true;
@@ -291,7 +291,7 @@ template <class Derived> class session
         // Close will be handled by the websocket itself
         else if (kind == websocket::frame_type::close)
         {
-            RADRPC_LOG("session::on_control_callback: Close received");
+            RADRPC_LOG("client::session::on_control_callback: Close received");
             m_close_received = true;
         }
     }
@@ -314,10 +314,10 @@ template <class Derived> class session
         m_close(false),
         m_close_received(false)
     {
-        RADRPC_LOG("+session");
+        RADRPC_LOG("+client::session");
     }
 
-    ~session() { RADRPC_LOG("~session"); }
+    ~session() { RADRPC_LOG("~client::session"); }
 
     /**
      * Ping the server & wait for a pong.
@@ -325,7 +325,7 @@ template <class Derived> class session
      */
     bool ping()
     {
-        RADRPC_LOG("session::ping");
+        RADRPC_LOG("client::session::ping");
         core::weak_post<Derived>(derived().shared_from_this(),
                                  derived().m_stream.get_executor(),
                                  std::bind(&session::handle_ping, this));
@@ -340,7 +340,7 @@ template <class Derived> class session
             m_ping_cv.wait_for(lock, response_timeout, [&] { return m_pong; });
         core::response_timeout(duration::zero());
         if (!pong)
-            RADRPC_LOG("session::ping: Timeout");
+            RADRPC_LOG("client::session::ping: Timeout");
         return pong;
     }
 
@@ -360,7 +360,7 @@ template <class Derived> class session
         auto written = write_callback->get_future();
 
 
-        RADRPC_LOG("session::send: Write " << data_size + sizeof(io_header)
+        RADRPC_LOG("client::session::send: Write " << data_size + sizeof(io_header)
                                            << "bytes");
         core::weak_post<Derived>(derived().shared_from_this(),
                                  derived().m_stream.get_executor(),
@@ -387,7 +387,7 @@ template <class Derived> class session
         core::send_timeout(duration::zero());
         if (status != std::future_status::ready)
         {
-            RADRPC_LOG("session::send: Timeout on send");
+            RADRPC_LOG("client::session::send: Timeout on send");
             ec = boost::asio::error::timed_out;
         }
     }
@@ -416,7 +416,7 @@ template <class Derived> class session
         auto written = write_callback->get_future();
 
 
-        RADRPC_LOG("session::send_recv: Write " << data_size + sizeof(io_header)
+        RADRPC_LOG("client::session::send_recv: Write " << data_size + sizeof(io_header)
                                                 << "bytes [RID:" << result_id
                                                 << "]");
         core::weak_post<Derived>(derived().shared_from_this(),
@@ -444,7 +444,7 @@ template <class Derived> class session
         core::send_timeout(duration::zero());
         if (status != std::future_status::ready)
         {
-            RADRPC_LOG("session::send_recv: Timeout on send");
+            RADRPC_LOG("client::session::send_recv: Timeout on send");
             ec = boost::asio::error::timed_out;
             return;
         }
@@ -456,7 +456,7 @@ template <class Derived> class session
             response_timeout = m_client_timeout->response_timeout;
         if (!m_cache.wait(result_id, response_timeout, recv_bytes))
         {
-            RADRPC_LOG("session::send_recv: Timeout on receive");
+            RADRPC_LOG("client::session::send_recv: Timeout on receive");
             ec = boost::asio::error::timed_out;
         }
         core::response_timeout(duration::zero());

@@ -15,7 +15,7 @@ set_option(BUILD_STRESS_TESTS
        ON)
 set_option(BIN_ASAN
         "Build targets with AddressSanitizer"
-       ON)
+       OFF)
 set_option(BIN_UBSAN
         "Build targets with UndefinedBehaviorSanitizer"
        OFF)
@@ -24,7 +24,7 @@ set_option(BIN_TSAN
        OFF)
 set_option(BIN_MSAN
         "Build targets with MemorydSanitizer, this requires instrumented libraries"
-       OFF)
+       ON)
 set_option(BIN_VALGRIND
         "Build targets configured for Valgrind"
        OFF)
@@ -33,7 +33,7 @@ set_option(LOGGING
        ON)
 set_option(SUPPORT_COVERAGE
         "Build targets with code coverage, this setting only affects compilers with clang or gnu"
-       ON)
+       OFF)
 set_option(SUPPORT_SSL
         "Configures for ssl usage with OpenSSL"
        ON)
@@ -60,7 +60,6 @@ message("${BIN_ASAN}\tBinaries AddressSanitizer")
 message("${BIN_UBSAN}\tBinaries UndefinedBehaviorSanitizer")
 message("${BIN_TSAN}\tBinaries ThreadSanitizer")
 message("${BIN_VALGRIND}\tBinaries Valgrind")
-message("${BIN_RAW}\tBinaries non-instrumented")
 message("${LOGGING}\tLogging")
 message("${SUPPORT_COVERAGE}\tCoverage support")
 message("${SUPPORT_SSL}\tSSL support")

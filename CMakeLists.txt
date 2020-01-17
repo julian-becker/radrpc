@@ -9,6 +9,7 @@ set(REPORT_DIR "Reports")
 set(EXAMPLE_DIR "${PROJECT_SOURCE_DIR}/examples")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/include/radrpc")
+set(SANITIZER_SUPPRESSION "${PROJECT_SOURCE_DIR}/sanitizer_suppression.txt")
 set(CACHE_OPTION OFF)
 
 # Todo proper naming of global variables 
@@ -19,7 +20,7 @@ set(LOCAL "${PROJECT_SOURCE_DIR}/cmake")
 include(ExternalProject)
 
 include("${LOCAL}/functions/AddTestExecutable.cmake")
-include("${LOCAL}/functions/Scripts.cmake")
+include("${LOCAL}/functions/BinaryWrapper.cmake")
 include("${LOCAL}/functions/SetDefinitions.cmake")
 include("${LOCAL}/functions/SetOption.cmake")
 
@@ -46,11 +47,3 @@ include("${LOCAL}/binaries/UnitSelf.cmake")
 include("${LOCAL}/binaries/UnitServer.cmake")
 
 include("${LOCAL}/WrapBinaries.cmake")
-
-
-
-
-
-
-
-

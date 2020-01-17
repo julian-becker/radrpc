@@ -30,10 +30,11 @@
 #include <thread>
 #include <vector>
 
+#include "catch.hpp"
+
+#include <test/core/log.hpp>
 #include <test/core/random.hpp>
 #include <test/core/test_data.hpp>
-
-#include "catch.hpp"
 
 using namespace test::common;
 using namespace test::core;
@@ -45,6 +46,7 @@ TEST_CASE("utils")
 {
     SECTION("random functions")
     {
+        TEST_DINFO("");
         INFO("rnd()");
         REQUIRE(rnd(-100, -100) == -100);
         REQUIRE(rnd(0, 0) == 0);
@@ -76,6 +78,7 @@ TEST_CASE("utils")
 
     SECTION("test_data")
     {
+        TEST_DINFO("");
         test_data tdata;
         INFO("init_test_data_bytes()");
         auto bytes = tdata.init_test_data_bytes(1000000);

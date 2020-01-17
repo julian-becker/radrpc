@@ -40,9 +40,15 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
             message("Set target: test_${SANTIZER}")
 
+            # Add libc++ flag & link instrumented if memory sanitizer is used
+            set(COMPILER_FLAGS_ "${COMPILER_FLAGS}")
+            if ("${SANTIZER}" STREQUAL "memory" AND INSTRUMENTED_FOUND)
+                set(COMPILER_FLAGS_ ${COMPILER_FLAGS_} ${INSTRUMENTED_COMPILER_FLAGS})
+            endif()
+
             # Build obj
             add_library(test_obj_${SANTIZER} OBJECT ${TEST_SRC})
-            target_compile_options(test_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS} -fsanitize=${SANTIZER})
+            target_compile_options(test_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
             set_target_properties(test_obj_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)
                 set_property(TARGET test_obj_${SANTIZER} PROPERTY POSITION_INDEPENDENT_CODE 1)

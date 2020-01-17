@@ -141,12 +141,12 @@ bool client::base::construct_plain_session()
 
     std::shared_ptr<connector_plain> ptr(
         new connector_plain(*m_io_ctx.get(),
-                               m_io_worker,
-                               m_client_cfg,
-                               m_client_timeout,
-                               m_timeout,
-                               m_req_handshake,
-                               m_bound_funcs),
+                            m_io_worker,
+                            m_client_cfg,
+                            m_client_timeout,
+                            m_timeout,
+                            m_req_handshake,
+                            m_bound_funcs),
         std::bind(&base::on_plain_session_delete, this, std::placeholders::_1));
     m_plain_session = ptr;
     return ptr->run() == connection_state::established;
@@ -161,13 +161,13 @@ bool client::base::construct_ssl_session()
         return true;
     std::shared_ptr<connector_ssl> ptr(
         new connector_ssl(*m_io_ctx.get(),
-                             m_ssl_ctx,
-                             m_io_worker,
-                             m_client_cfg,
-                             m_client_timeout,
-                             m_timeout,
-                             m_req_handshake,
-                             m_bound_funcs),
+                          m_ssl_ctx,
+                          m_io_worker,
+                          m_client_cfg,
+                          m_client_timeout,
+                          m_timeout,
+                          m_req_handshake,
+                          m_bound_funcs),
         std::bind(&base::on_ssl_session_delete, this, std::placeholders::_1));
     m_ssl_session = ptr;
     return ptr->run() == connection_state::established;

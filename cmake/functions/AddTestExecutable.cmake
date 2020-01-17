@@ -23,9 +23,6 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             # Link static library
             target_link_libraries(${BINARY} ${LINK_LIBRARIES} radrpc_static test_static)
         endif()
-        if(SUPPORT_SSL)
-            target_link_libraries(${BINARY} ${OPENSSL_LIBRARIES})
-        endif()
 
     # Build instrumted on other platforms
     else()
@@ -36,12 +33,20 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
 
             message("Set target: ${BINARY}_${SANTIZER}")
 
+            # Add libc++ flag & link instrumented if memory sanitizer is used
+            set(COMPILER_FLAGS_ "${COMPILER_FLAGS}")
+            set(LINK_LIBRARIES_ "${LINK_LIBRARIES}")
+            if ("${SANTIZER}" STREQUAL "memory" AND INSTRUMENTED_FOUND)
+                set(COMPILER_FLAGS_ ${COMPILER_FLAGS_} ${INSTRUMENTED_COMPILER_FLAGS})
+                set(LINK_LIBRARIES_ ${INSTRUMENTED_LINK_LIBRARIES})
+            endif()
+
             if (IMPL_CATCH)
                 add_executable(${BINARY}_${SANTIZER} ${SRC_FILES} $<TARGET_OBJECTS:catch_main_obj_${SANTIZER}>)
             else()
                 add_executable(${BINARY}_${SANTIZER} ${SRC_FILES})
             endif()
-            target_compile_options(${BINARY}_${SANTIZER} PRIVATE ${COMPILER_FLAGS} -fsanitize=${SANTIZER})
+            target_compile_options(${BINARY}_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
             set_target_properties(${BINARY}_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)
                 set_property(TARGET ${BINARY}_${SANTIZER} PROPERTY POSITION_INDEPENDENT_CODE 1)
@@ -49,13 +54,10 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             set_definitions(${BINARY}_${SANTIZER} ${SANTIZER})
             if(BUILD_INTERNAL_SHARED)
                 # Link shared library
-                target_link_libraries(${BINARY}_${SANTIZER} ${LINK_LIBRARIES} radrpc_shared_${SANTIZER} test_shared_${SANTIZER})
+                target_link_libraries(${BINARY}_${SANTIZER} ${LINK_LIBRARIES_} radrpc_shared_${SANTIZER} test_shared_${SANTIZER})
             else()
                 # Link static library
-                target_link_libraries(${BINARY}_${SANTIZER} ${LINK_LIBRARIES} radrpc_static_${SANTIZER} test_static_${SANTIZER})
-            endif()
-            if(SUPPORT_SSL)
-                target_link_libraries(${BINARY}_${SANTIZER} ${OPENSSL_LIBRARIES})
+                target_link_libraries(${BINARY}_${SANTIZER} ${LINK_LIBRARIES_} radrpc_static_${SANTIZER} test_static_${SANTIZER})
             endif()
 
         endforeach()
@@ -84,9 +86,6 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             else()
                 # Link static library
                 target_link_libraries(${BINARY}_valgrind ${LINK_LIBRARIES} radrpc_static test_valgrind_static)
-            endif()
-            if(SUPPORT_SSL)
-                target_link_libraries(${BINARY}_valgrind ${OPENSSL_LIBRARIES})
             endif()
 
         endif()

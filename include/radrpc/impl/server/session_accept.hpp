@@ -467,6 +467,7 @@ class session_accept
         m_established(false),
         m_closing(false),
         m_closing_success(false),
+        m_remote_sent_close(false),
         m_socket_closed(false),
         m_state(connection_state::none),
         m_ping_state(ping_state::ping_next)
@@ -506,6 +507,7 @@ class session_accept
         m_established(false),
         m_closing(false),
         m_closing_success(false),
+        m_remote_sent_close(false),
         m_socket_closed(false),
         m_state(connection_state::none),
         m_ping_state(ping_state::ping_next)

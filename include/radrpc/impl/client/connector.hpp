@@ -89,14 +89,14 @@ class connector : public session<connector<StreamType>>,
     {
         if (ec)
         {
-            RADRPC_LOG("connector::on_resolve: " << ec.message());
+            RADRPC_LOG("client::connector::on_resolve: " << ec.message());
             m_run_callback.set_value(false);
             return;
         }
         m_state = connection_state::connect;
         boost::beast::get_lowest_layer(m_stream).expires_after(
             m_timeout->handshake_timeout);
-        RADRPC_LOG("connector::on_resolve: Connect...");
+        RADRPC_LOG("client::connector::on_resolve: Connect...");
         boost::beast::get_lowest_layer(m_stream).async_connect(
             results,
             boost::beast::bind_front_handler(&connector::on_connect,
@@ -111,7 +111,7 @@ class connector : public session<connector<StreamType>>,
     {
         if (ec)
         {
-            RADRPC_LOG("connector::on_connect: " << ec.message());
+            RADRPC_LOG("client::connector::on_connect: " << ec.message());
             m_run_callback.set_value(false);
             return;
         }
@@ -127,7 +127,7 @@ class connector : public session<connector<StreamType>>,
     typename std::enable_if<std::is_same<F, streams::plain>::value, void>::type
     ssl_handshake()
     {
-        RADRPC_LOG("client_connect::ssl_handshake: No ssl");
+        RADRPC_LOG("client::connector::ssl_handshake: No ssl");
         boost::system::error_code ec;
         on_ssl_handshake(ec);
     }
@@ -140,7 +140,7 @@ class connector : public session<connector<StreamType>>,
     typename std::enable_if<std::is_same<F, streams::ssl>::value, void>::type
     ssl_handshake()
     {
-        RADRPC_LOG("client_connect::ssl_handshake: SSL handshake...");
+        RADRPC_LOG("client::connector::ssl_handshake: SSL handshake...");
         m_stream.next_layer().async_handshake(
             ssl::stream_base::client,
             boost::beast::bind_front_handler(&connector::on_ssl_handshake,
@@ -155,7 +155,7 @@ class connector : public session<connector<StreamType>>,
     {
         if (ec)
         {
-            RADRPC_LOG("connector::on_ssl_handshake: " << ec.message());
+            RADRPC_LOG("client::connector::on_ssl_handshake: " << ec.message());
             m_run_callback.set_value(false);
             return;
         }
@@ -175,7 +175,7 @@ class connector : public session<connector<StreamType>>,
                 }
             }));
 
-        RADRPC_LOG("connector::on_ssl_handshake: Handshake...");
+        RADRPC_LOG("client::connector::on_ssl_handshake: Handshake...");
         m_stream.async_handshake(
             res_handshake,
             base().m_client_cfg->host_address,
@@ -191,14 +191,14 @@ class connector : public session<connector<StreamType>>,
     {
         if (ec)
         {
-            RADRPC_LOG("connector::on_handshake: " << ec.message());
+            RADRPC_LOG("client::connector::on_handshake: " << ec.message());
             m_run_callback.set_value(false);
             return;
         }
         base().read();
         m_state = connection_state::established;
         m_run_callback.set_value(true);
-        RADRPC_LOG("connector::on_handshake: Connection established");
+        RADRPC_LOG("client::connector::on_handshake: Connection established");
     }
 
     /**
@@ -224,7 +224,7 @@ class connector : public session<connector<StreamType>>,
     void on_close(boost::beast::error_code ec)
     {
         if (ec)
-            RADRPC_LOG("connector::on_close: " << ec.message());
+            RADRPC_LOG("client::connector::on_close: " << ec.message());
     }
 
   public:
@@ -263,7 +263,7 @@ class connector : public session<connector<StreamType>>,
         m_state(connection_state::none),
         m_close_initiated(false)
     {
-        RADRPC_LOG("+connector: plain");
+        RADRPC_LOG("+client::connector: plain");
     }
 
 #ifdef RADRPC_SSL_SUPPORT
@@ -301,11 +301,11 @@ class connector : public session<connector<StreamType>>,
         m_state(connection_state::none),
         m_close_initiated(false)
     {
-        RADRPC_LOG("+connector: ssl");
+        RADRPC_LOG("+client::connector: ssl");
     }
 #endif
 
-    ~connector() { RADRPC_LOG("~connector"); }
+    ~connector() { RADRPC_LOG("~client::connector"); }
 
     /**
      * Connects to the server.
@@ -337,7 +337,7 @@ class connector : public session<connector<StreamType>>,
             if (m_io_ctx->stopped())
                 m_io_ctx->restart();
             m_io_ctx->run();
-            RADRPC_LOG("connector::run: IO done");
+            RADRPC_LOG("client::connector::run: IO done");
         });
 
         // This could get stuck if "websocket::stream_base::timeout" is set to
@@ -360,21 +360,22 @@ class connector : public session<connector<StreamType>>,
                 this->shared_from_this(),
                 m_stream.get_executor(),
                 std::bind(&connector::close_session, this));
-            RADRPC_LOG("session::close: Run IO to close session");
+            RADRPC_LOG("client::connector::close: Run IO to close session");
             m_io_ctx->restart();
             m_io_ctx->run();
             RADRPC_LOG("session::close: IO done");
         }
         else
         {
-            RADRPC_LOG("session::close");
+            RADRPC_LOG("client::connector::close");
             if (!core::wait_weak_post<connector>(
                     this->shared_from_this(),
                     m_stream.get_executor(),
                     std::bind(&connector::close_session, this),
                     std::chrono::seconds(config::io_timeout_secs)))
             {
-                RADRPC_LOG("session::close: Timeout, IO probably stopped");
+                RADRPC_LOG(
+                    "client::connector::close: Timeout, IO probably stopped");
             }
         }
     }

@@ -31,10 +31,11 @@
 #include <radrpc/core/timeout.hpp>
 #include <radrpc/core/data/cache.hpp>
 
-#include <test/core/defaults.hpp>
-#include <test/core/sleep.hpp>
-
 #include "catch.hpp"
+
+#include <test/core/defaults.hpp>
+#include <test/core/log.hpp>
+#include <test/core/sleep.hpp>
 
 using namespace radrpc;
 using namespace test::core;
@@ -75,6 +76,7 @@ bool data_compare(const char *lhs_data,
 
 TEST_CASE("thread local storage timeout")
 {
+    TEST_DINFO("");
     using namespace radrpc::core;
     REQUIRE(response_timeout() == duration::zero());
     response_timeout(std::chrono::milliseconds(100));
@@ -96,6 +98,7 @@ TEST_CASE("data::cache implementation")
 {
     SECTION("wait(receive_buffer)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         receive_buffer result;
         REQUIRE_FALSE(cache.wait(0, duration::zero(), result));
@@ -104,6 +107,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("wait(std::shared_ptr<core::data::read>)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::shared_ptr<core::data::read> result;
         REQUIRE_FALSE(cache.wait(0, duration::zero(), result));
@@ -112,12 +116,14 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         REQUIRE(cache.queue(std::chrono::milliseconds(0)) == 1);
     }
 
     SECTION("queue clear")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         REQUIRE(cache.queue(std::chrono::milliseconds(0)) == 1);
         REQUIRE(cache.size() == 1);
@@ -127,6 +133,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue clear referenced")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -139,6 +146,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue limit & id distribution")
     {
+        TEST_DINFO("");
         core::data::cache cache(3);
         std::vector<char> result;
         for (int i = 0; i < 4; ++i)
@@ -153,6 +161,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("remove obsolete entries")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(2);
         auto delete_callback = [&] { --ref_counter; };
@@ -172,6 +181,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue wait clear(receive_buffer)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -191,6 +201,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue wait clear(std::shared_ptr<core::data::read>)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -215,6 +226,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> wait(receive_buffer) -> swap")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -234,6 +246,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> wait(std::shared_ptr<core::data::read>) -> swap")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -259,6 +272,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> wait(receive_buffer) -> late swap")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -277,6 +291,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> wait(std::shared_ptr<core::data::read>) -> late swap")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -300,6 +315,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> swap -> wait(receive_buffer)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -315,6 +331,7 @@ TEST_CASE("data::cache implementation")
 
     SECTION("queue -> swap -> wait(std::shared_ptr<core::data::read>)")
     {
+        TEST_DINFO("");
         core::data::cache cache(10);
         std::atomic<int> ref_counter = ATOMIC_VAR_INIT(1);
         auto delete_callback = [&] { --ref_counter; };
@@ -345,6 +362,7 @@ TEST_CASE("receive_buffer wrapper")
 
     SECTION("data compare")
     {
+        TEST_DINFO("");
         REQUIRE(data_compare(static_cast<const char *>(buffer.data()),
                              buffer.size(),
                              bytes.data(),
@@ -353,6 +371,7 @@ TEST_CASE("receive_buffer wrapper")
 
     SECTION("clear")
     {
+        TEST_DINFO("");
         buffer.clear();
         REQUIRE(buffer.empty());
         REQUIRE_FALSE(data_compare(static_cast<const char *>(buffer.data()),
