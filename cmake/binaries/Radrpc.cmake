@@ -10,6 +10,7 @@ set(RADRPC_SRC
 
 # Build obj
 add_library(radrpc_obj OBJECT ${RADRPC_SRC})
+target_include_directories(radrpc_obj PRIVATE ${RADRPC_INCLUDE})
 target_compile_options(radrpc_obj PRIVATE ${COMPILER_FLAGS})
 set_target_properties(radrpc_obj PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
 if (BUILD_SHARED)
@@ -43,6 +44,7 @@ foreach(SANTIZER ${SANTIZERS})
 
     # Build obj
     add_library(radrpc_obj_${SANTIZER} OBJECT ${RADRPC_SRC})
+    target_include_directories(radrpc_obj_${SANTIZER} PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(radrpc_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
     set_target_properties(radrpc_obj_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
     if (BUILD_SHARED OR BUILD_INTERNAL_SHARED)

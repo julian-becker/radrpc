@@ -5,6 +5,7 @@ if (BUILD_EXAMPLES)
 
     message("Set target: advanced_server")
     add_executable(advanced_server "${EXAMPLE_ADVANCED_SERVER_SRC}")
+    target_include_directories(advanced_server PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(advanced_server PRIVATE ${COMPILER_FLAGS})
     set_target_properties(advanced_server PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
     set_definitions(advanced_server "")

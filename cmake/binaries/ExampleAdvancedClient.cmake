@@ -5,6 +5,7 @@ if (BUILD_EXAMPLES)
 
     message("Set target: advanced_client")
     add_executable(advanced_client "${EXAMPLE_ADVANCED_CLIENT_SRC}")
+    target_include_directories(advanced_client PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(advanced_client PRIVATE ${COMPILER_FLAGS})
     set_target_properties(advanced_client PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
     set_definitions(advanced_client "")

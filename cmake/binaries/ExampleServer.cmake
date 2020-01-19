@@ -5,6 +5,7 @@ if (BUILD_EXAMPLES)
 
     message("Set target: server")
     add_executable(server "${EXAMPLE_SERVER_SRC}")
+    target_include_directories(server PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(server PRIVATE ${COMPILER_FLAGS})
     set_target_properties(server PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
     set_definitions(server "")

@@ -14,6 +14,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
         # Build obj
         add_library(test_obj OBJECT ${TEST_SRC})
+        target_include_directories(test_obj PRIVATE ${RADRPC_INCLUDE} ${RADRPC_TEST_INCLUDE})
         target_compile_options(test_obj PRIVATE ${COMPILER_FLAGS})
         set_target_properties(test_obj PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
         if (BUILD_INTERNAL_SHARED)
@@ -48,6 +49,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
             # Build obj
             add_library(test_obj_${SANTIZER} OBJECT ${TEST_SRC})
+            target_include_directories(test_obj_${SANTIZER} PRIVATE ${RADRPC_INCLUDE} ${RADRPC_TEST_INCLUDE})
             target_compile_options(test_obj_${SANTIZER} PRIVATE ${COMPILER_FLAGS_} -fsanitize=${SANTIZER})
             set_target_properties(test_obj_${SANTIZER} PROPERTIES LINK_FLAGS "-fsanitize=${SANTIZER} ${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)

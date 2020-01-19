@@ -5,6 +5,7 @@ if (BUILD_EXAMPLES)
 
     message("Set target: client")
     add_executable(client "${EXAMPLE_CLIENT_SRC}")
+    target_include_directories(client PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(client PRIVATE ${COMPILER_FLAGS})
     set_target_properties(client PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
     set_definitions(client "")

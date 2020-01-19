@@ -5,6 +5,7 @@ if (BUILD_EXAMPLES AND SUPPORT_SSL)
 
     message("Set target: ssl_server")
     add_executable(ssl_server "${EXAMPLE_SSL_SERVER_SRC}")
+    target_include_directories(ssl_server PRIVATE ${RADRPC_INCLUDE})
     target_compile_options(ssl_server PRIVATE ${COMPILER_FLAGS})
     set_target_properties(ssl_server PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
     set_definitions(ssl_server "")
