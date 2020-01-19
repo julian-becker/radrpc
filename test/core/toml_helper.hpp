@@ -41,7 +41,7 @@ T get_field(const std::shared_ptr<cpptoml::table> &data,
 {
     auto field = data->get_table(table_name)->get_as<T>(field_name);
     if (!field)
-        RAD_THROW("config::get_field: Invalid field '"
+        TEST_THROW("config::get_field: Invalid field '"
                   << table_name.c_str() << "::" << field_name.c_str() << "'");
     return field.value_or(T());
 }
