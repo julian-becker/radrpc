@@ -32,7 +32,7 @@
 #include <test/stress/test_suite/client_set.hpp>
 #include <test/stress/test_suite/server_set.hpp>
 
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 
 namespace test {
 namespace stress {

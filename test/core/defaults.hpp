@@ -25,7 +25,7 @@
 #ifndef RADRPC_TEST_CORE_DEFAULTS_HPP
 #define RADRPC_TEST_CORE_DEFAULTS_HPP
 
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 
 namespace test {
 namespace core {

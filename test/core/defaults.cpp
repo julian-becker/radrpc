@@ -25,7 +25,7 @@
 #include <chrono>
 #include <memory>
 
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 
 #include <test/core/defaults.hpp>
 

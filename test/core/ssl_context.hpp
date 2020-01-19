@@ -25,7 +25,7 @@
 #ifndef RADRPC_TEST_CORE_SSL_CONTEXT_HPP
 #define RADRPC_TEST_CORE_SSL_CONTEXT_HPP
 
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 
 #include <test/common/ssl_test_files.hpp>
 

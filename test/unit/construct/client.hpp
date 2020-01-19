@@ -25,7 +25,7 @@
 #ifndef RADRPC_TEST_UNIT_CONSTRUCT_CLIENT_HPP
 #define RADRPC_TEST_UNIT_CONSTRUCT_CLIENT_HPP
 
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 
 #include <test/core/defaults.hpp>
 

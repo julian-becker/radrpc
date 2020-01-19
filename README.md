@@ -157,7 +157,7 @@ You can clone this repository and add the include folder to your project & use i
 // You can configure radrpc like this:
 //#define RADRPC_SSL_SUPPORT    // Enables SSL support.
 //#define RADRPC_LOGGING        // Enables logging facility.
-#include "radrpc.hpp"
+#include <radrpc/radrpc.hpp>
 ```
 It is also necessary to include / link Boost and OpenSSL if ssl support is desired.
 An example on how configure it with CMake can be found [here](https://github.com/reapler/radrpc/tree/master/CMakeLists.txt).
