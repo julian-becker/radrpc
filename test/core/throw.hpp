@@ -32,21 +32,26 @@
 namespace test {
 namespace core {
 
-#ifdef _WIN32
-#define RAD_FILENAME                                                           \
-    (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#else
-#define RAD_FILENAME                                                           \
-    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#endif
-#define RAD_THROW(MSG)                                                         \
+#define TEST_THROW(MSG)                                                        \
     do                                                                         \
     {                                                                          \
         std::stringstream ss;                                                  \
-        ss << MSG << "\nIn " << __FUNCTION__ << " " << RAD_FILENAME << ":"     \
+        ss << MSG << "\nIn " << __FUNCTION__ << " " << TEST_FILENAME << ":"    \
            << __LINE__;                                                        \
-        TEST_INFO_FAIL(ss.str().c_str());                                               \
+        TEST_INFO_FAIL(ss.str().c_str());                                      \
         std::raise(SIGTERM);                                                   \
+    } while (false)
+
+#define TEST_ASSERT(BOOLEAN)                                                   \
+    do                                                                         \
+    {                                                                          \
+        if (!(BOOLEAN))                                                        \
+        {                                                                      \
+            std::stringstream ss;                                              \
+            ss << "In " << __FUNCTION__ << " " << TEST_FILENAME << ":"         \
+               << __LINE__;                                                    \
+            throw std::runtime_error(ss.str().c_str());                        \
+        }                                                                      \
     } while (false)
 
 } // namespace core
