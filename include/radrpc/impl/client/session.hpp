@@ -157,8 +157,9 @@ template <class Derived> class session
     {
         if (m_close || m_close_received || m_write_error || m_read_error)
             return;
+        // Convert to network byte order (big endian)
         if (!m_queue.queue_data(
-                call_id, result_id, callback, data_ptr, data_size))
+                htonl(call_id), htonl(result_id), callback, data_ptr, data_size))
             return;
         if (m_queue.is_writing())
             return;
@@ -171,13 +172,12 @@ template <class Derived> class session
      */
     void write()
     {
+        auto packet = m_queue.front();
         derived().m_stream.async_write(
             std::vector<boost::asio::const_buffer>{
-                boost::asio::buffer(
-                    reinterpret_cast<char *>(&m_queue.front()->header),
-                    sizeof(io_header)),
-                boost::asio::buffer(m_queue.front()->body_ptr,
-                                    m_queue.front()->body_size)},
+                boost::asio::buffer(reinterpret_cast<const char *>(&packet->header),
+                                    sizeof(io_header)),
+                boost::asio::buffer(packet->body_ptr, packet->body_size)},
             boost::beast::bind_front_handler(&session::on_write,
                                              derived().shared_from_this()));
         // If we are going to operate on the queue for example with 'clear()',
@@ -187,7 +187,7 @@ template <class Derived> class session
         // free' error. The alternative handler binding could look like this:
         // boost::beast::bind_front_handler(&session::on_write,
         //                                  derived().shared_from_this(),
-        //                                  m_queue.front()->shared_from_this())
+        //                                  packet->shared_from_this())
         // The handler needs also to be changed.
         // But since removing entries happens only in 'on_write()' it is fine
         // now.
@@ -247,7 +247,12 @@ template <class Derived> class session
         if (buffer_front.size() >= sizeof(io_header))
         {
             auto header =
-                reinterpret_cast<const io_header *>(buffer_front.data());
+                reinterpret_cast<io_header *>(buffer_front.data());
+
+            // Convert to host byte order
+            header->call_id = ntohl(header->call_id);
+            header->result_id = ntohl(header->result_id);
+
             auto func_itr = derived().m_bound_funcs->find(header->call_id);
             m_read_buffer.consume(sizeof(io_header));
             if (func_itr != derived().m_bound_funcs->end())

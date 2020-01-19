@@ -61,7 +61,7 @@ template <class Derived> class server_session : private session_context
     std::shared_ptr<session_manager> m_manager;
 
     /// A queue to hold the data to send.
-    std::deque<std::shared_ptr<data::push>> m_queue;
+    std::deque<std::shared_ptr<const data::push>> m_queue;
 
     /// The used server timeout.
     const server_timeout &m_server_timeout;
@@ -96,6 +96,11 @@ template <class Derived> class server_session : private session_context
         {
             m_header = *reinterpret_cast<const io_header *>(
                 m_receive_buffer_ref.data());
+
+            // Convert to host byte order
+            m_header.call_id = ntohl(m_header.call_id);
+            m_header.result_id = ntohl(m_header.result_id);
+
             uint32_t call_id = m_header.call_id;
             auto func_itr = m_manager->bound_funcs.find(call_id);
             m_receive_buffer.consume(sizeof(io_header));
@@ -119,9 +124,15 @@ template <class Derived> class server_session : private session_context
                     // client
                     if (!response.empty())
                     {
-                        auto push = new data::push(m_header);
-                        push->body.swap(response);
-                        handle_send(std::shared_ptr<data::push>(push));
+                        // Convert to network byte order (big endian)
+                        m_header.call_id = htonl(m_header.call_id);
+                        m_header.result_id = htonl(m_header.result_id);
+
+                        const auto push =
+                            new data::push(m_header, std::move(response));
+                        // Don't need to clear, since it will be reassigned after
+                        // call in 'on_read'
+                        handle_send(std::shared_ptr<const data::push>(push));
                     }
                 }
             }
@@ -142,7 +153,7 @@ template <class Derived> class server_session : private session_context
      * This function must be called within the executor context.
      * @param data
      */
-    void handle_send(const std::shared_ptr<data::push> &data)
+    void handle_send(const std::shared_ptr<const data::push> &data)
     {
         if (derived().m_closing || derived().m_remote_sent_close ||
             m_write_error || m_read_error)
@@ -161,12 +172,12 @@ template <class Derived> class server_session : private session_context
      */
     void write()
     {
+        auto packet = m_queue.front();
         derived().m_stream.async_write(
             std::vector<boost::asio::const_buffer>{
-                boost::asio::buffer(
-                    reinterpret_cast<char *>(&m_queue.front()->header),
-                    sizeof(io_header)),
-                boost::asio::buffer(m_queue.front()->body),
+                boost::asio::buffer(reinterpret_cast<const char *>(&packet->header),
+                                    sizeof(io_header)),
+                boost::asio::buffer(packet->body),
             },
             boost::beast::bind_front_handler(&server_session::on_write,
                                              derived().shared_from_this()));
@@ -177,7 +188,7 @@ template <class Derived> class server_session : private session_context
         // free' error. The alternative handler binding could look like this:
         // boost::beast::bind_front_handler(&server_session::on_write,
         //                                  derived().shared_from_this(),
-        //                                  m_queue.front()->shared_from_this())
+        //                                  packet->shared_from_this())
         // The handler needs also to be changed.
         // But since removing entries happens only in 'on_write()' it is fine
         // now.
@@ -270,7 +281,7 @@ template <class Derived> class server_session : private session_context
     /**
      * @param data
      */
-    void send(std::shared_ptr<data::push> data)
+    void send(std::shared_ptr<const data::push> data)
     {
         boost::asio::post(
             derived().m_stream.get_executor(),

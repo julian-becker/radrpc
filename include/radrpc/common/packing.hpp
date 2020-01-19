@@ -22,50 +22,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef RADRPC_COMMON_IO_HEADER_HPP
-#define RADRPC_COMMON_IO_HEADER_HPP
-
-#include <cstdint>
-#include <ostream>
-
-#include <radrpc/common/packing.hpp>
+#ifndef RADRPC_COMMON_PACKING_HPP
+#define RADRPC_COMMON_PACKING_HPP
 
 namespace radrpc {
 namespace common {
 
 /**
- * A header which is prepend to all data transferred between
- * two hosts & allows to identify these by ids.
+ * @brief Macro for structure packing.
+ * This has been tested on several compilers on https://godbolt.org/.
+ * Godbolt can also be used to determine the ideal default alignment.
+ * @example
+ *
+ * PACK(struct my_struct
+ * {
+ *      uint64_t a;
+ * });
+ *
+ * for typedefs:
+ * PACK(typedef struct 
+ * { 
+ *      int x;
+ * }) my_struct;
  */
-PACK(struct io_header {
-    /// The id to call on the remote host.
-    uint32_t call_id;
-
-    /// Reserved field used as padding.
-    uint32_t pad0;
-
-    /// The id which will be sent back to caller.
-    uint64_t result_id;
-
-    io_header(uint32_t p_call_id, uint64_t p_result_id);
-});
-
-inline io_header::io_header(uint32_t p_call_id, uint64_t p_result_id) :
-    call_id(p_call_id),
-    pad0(0),
-    result_id(p_result_id)
-{
-}
-
-inline std::ostream &operator<<(std::ostream &os, const io_header &o)
-{
-    os << "call_id: " << o.call_id << std::endl
-       << "pad0: " << o.pad0 << std::endl
-       << "result_id: " << o.result_id << std::endl;
-    return os;
-}
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER) || defined(__BORLANDC__)
+#define PACK(__Declaration__)                                                  \
+    __pragma(pack(push, 1)) __Declaration__ __pragma(pack(pop))
+#else
+#define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
+#endif
 
 } // namespace common
 } // namespace radrpc
 
-#endif // RADRPC_COMMON_IO_HEADER_HPP
+#endif // RADRPC_COMMON_PACKING_HPP

@@ -51,13 +51,14 @@ void session_manager::broadcast(uint32_t call_id,
     }
     if (connections() == 0)
         return;
-    auto push = new data::push(io_header(call_id, 0));
-    push->body = send_bytes;
-    auto push_ptr =
-        std::shared_ptr<data::push>(push,
-                                    std::bind(&session_manager::on_msg_sent,
-                                              shared_from_this(),
-                                              std::placeholders::_1));
+        
+    // Convert to network byte order (big endian)
+    const auto push = new data::push(io_header(htonl(call_id), 0), send_bytes);
+    auto push_ptr = std::shared_ptr<const data::push>(
+        push,
+        std::bind(&session_manager::on_msg_sent,
+                  shared_from_this(),
+                  std::placeholders::_1));
     m_msg_queued++;
 
     // Copy sessions to avoid long locking.
@@ -111,7 +112,7 @@ void session_manager::broadcast(uint32_t call_id,
 #endif
 }
 
-void session_manager::on_msg_sent(data::push *p)
+void session_manager::on_msg_sent(const data::push *p)
 {
     m_msg_queued--;
     RADRPC_LOG("session_manager::on_msg_sent: " << m_msg_queued);

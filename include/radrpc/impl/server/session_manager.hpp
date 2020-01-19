@@ -110,7 +110,7 @@ class session_manager : public std::enable_shared_from_this<session_manager>
      * Used for decrementing the message counter.
      * @param p
      */
-    void on_msg_sent(data::push *p);
+    void on_msg_sent(const data::push *p);
 
   public:
     /// The server config to use.

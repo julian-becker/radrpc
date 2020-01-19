@@ -127,12 +127,14 @@ void config_file::load_config(const boost::filesystem::path &file)
             get_field<uint32_t>(data, "server_set", "max_delay_ms");
         m_server_set.broadcast_delay_ms = //
             get_field<uint32_t>(data, "server_set", "broadcast_delay_ms");
-        m_server_set.test_entries = //
-            get_field<uint32_t>(data, "server_set", "test_entries");
+        m_server_set.min_send_bytes = //
+            get_field<uint32_t>(data, "server_set", "min_send_bytes");
+        m_server_set.max_send_bytes = //
+            get_field<uint32_t>(data, "server_set", "max_send_bytes");
     }
     catch (...)
     {
-        RAD_THROW("config::load_config: Could not parse '" << file.c_str()
+        TEST_THROW("config::load_config: Could not parse '" << file.c_str()
                                                            << "'");
     }
 }
@@ -237,7 +239,8 @@ void config_file::store_config(const boost::filesystem::path file)
             ss << "min_delay_ms = " << cfg.min_delay_ms << "\n";
             ss << "max_delay_ms = " << cfg.max_delay_ms << "\n";
             ss << "broadcast_delay_ms = " << cfg.broadcast_delay_ms << "\n";
-            ss << "test_entries = " << cfg.test_entries << "\n";
+            ss << "min_send_bytes = " << cfg.min_send_bytes << "\n";
+            ss << "max_send_bytes = " << cfg.max_send_bytes << "\n";
             ss << "\n";
         }
 
@@ -249,7 +252,7 @@ void config_file::store_config(const boost::filesystem::path file)
     }
     catch (...)
     {
-        RAD_THROW("config::store_config: Could not store '" << file.c_str()
+        TEST_THROW("config::store_config: Could not store '" << file.c_str()
                                                             << "'");
     }
 }
@@ -265,7 +268,7 @@ config_file::config_file(const boost::filesystem::path file) :
     {
         store_config(file);
         if (!boost::filesystem::exists(file))
-            RAD_THROW("+config: Could not create file '" << file.c_str()
+            TEST_THROW("+config: Could not create file '" << file.c_str()
                                                          << "'");
     }
     load_config(file);

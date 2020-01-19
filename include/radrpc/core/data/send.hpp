@@ -52,10 +52,10 @@ class send
     const char *body_ptr;
 
     /// The size of the body.
-    std::size_t body_size;
+    const std::size_t body_size;
 
     /// The header to send.
-    io_header header;
+    const io_header header;
 
     /**
      * @param p_call_id The id to call on remote host.

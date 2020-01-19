@@ -28,17 +28,15 @@
 #include <cstdint>
 #include <ostream>
 
+#include <boost/asio/detail/socket_ops.hpp>
+
+#include <radrpc/common/packing.hpp>
+
 namespace test {
 namespace stress {
 namespace test_suite {
 
-#ifdef _WIN32
-#pragma pack(push, 1)
-struct server_set
-#else
-struct __attribute__((packed)) server_set
-#endif
-{
+PACK(struct server_set {
     uint32_t accept_chance;
     uint32_t connect_chance;
     uint32_t response_chance;
@@ -46,23 +44,54 @@ struct __attribute__((packed)) server_set
     uint32_t min_delay_ms;
     uint32_t max_delay_ms;
     uint32_t broadcast_delay_ms;
-    uint32_t test_entries;
+    uint32_t min_send_bytes;
+    uint32_t max_send_bytes;
 
-    server_set() :
-        accept_chance(100),
-        connect_chance(100),
-        response_chance(100),
-        close_chance(0),
-        min_delay_ms(20),
-        max_delay_ms(50),
-        broadcast_delay_ms(1000),
-        test_entries(1500)
-    {
-    }
-};
-#ifdef _WIN32
-#pragma pack(pop)
-#endif
+    server_set();
+
+    void to_network();
+
+    void to_host();
+});
+
+inline server_set::server_set() :
+    accept_chance(100),
+    connect_chance(100),
+    response_chance(100),
+    close_chance(0),
+    min_delay_ms(20),
+    max_delay_ms(50),
+    broadcast_delay_ms(1000),
+    min_send_bytes(1),
+    max_send_bytes(0xFF)
+{
+}
+
+inline void server_set::to_network()
+{
+    accept_chance = htonl(accept_chance);
+    connect_chance = htonl(connect_chance);
+    response_chance = htonl(response_chance);
+    close_chance = htonl(close_chance);
+    min_delay_ms = htonl(min_delay_ms);
+    max_delay_ms = htonl(max_delay_ms);
+    broadcast_delay_ms = htonl(broadcast_delay_ms);
+    min_send_bytes = htonl(min_send_bytes);
+    max_send_bytes = htonl(max_send_bytes);
+}
+
+inline void server_set::to_host()
+{
+    accept_chance = ntohl(accept_chance);
+    connect_chance = ntohl(connect_chance);
+    response_chance = ntohl(response_chance);
+    close_chance = ntohl(close_chance);
+    min_delay_ms = ntohl(min_delay_ms);
+    max_delay_ms = ntohl(max_delay_ms);
+    broadcast_delay_ms = ntohl(broadcast_delay_ms);
+    min_send_bytes = ntohl(min_send_bytes);
+    max_send_bytes = ntohl(max_send_bytes);
+}
 
 inline std::ostream &operator<<(std::ostream &os, const server_set &o)
 {
@@ -73,7 +102,8 @@ inline std::ostream &operator<<(std::ostream &os, const server_set &o)
        << "min_delay_ms: " << o.min_delay_ms << std::endl
        << "max_delay_ms: " << o.max_delay_ms << std::endl
        << "broadcast_delay_ms: " << o.broadcast_delay_ms << std::endl
-       << "test_entries: " << o.test_entries << std::endl;
+       << "min_send_bytes: " << o.min_send_bytes << std::endl
+       << "max_send_bytes: " << o.max_send_bytes << std::endl;
     return os;
 }
 

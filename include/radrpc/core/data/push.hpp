@@ -38,18 +38,28 @@ namespace data {
 using io_header = radrpc::common::io_header;
 
 /**
- * A container for send data to clients.
+ * A container to send data to clients.
  */
 class push : public std::enable_shared_from_this<push>
 {
   public:
     /// The header of the data.
-    io_header header;
+    const io_header header;
 
     /// The bytes to send as body.
-    std::vector<char> body;
+    const std::vector<char> body;
 
-    explicit push(const io_header &p_io_header) : header(p_io_header) {}
+    explicit push(const io_header &p_header, const std::vector<char> &p_body) :
+        header(p_header),
+        body(p_body)
+    {
+    }
+
+    explicit push(const io_header &p_header, const std::vector<char> &&p_body) :
+        header(p_header),
+        body(std::move(p_body))
+    {
+    }
 };
 
 } // namespace data
