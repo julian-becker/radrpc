@@ -46,10 +46,18 @@ using namespace test::stress;
 int main()
 {
     sanitizer_info();
-    std::unique_ptr<broadcaster> broadcast = nullptr;
-    std::atomic<bool> send_broadcast = ATOMIC_VAR_INIT(false); // Todo
     auto data = std::make_unique<test_data>();
-    auto set = std::make_unique<test_suite::server_set>();
+    std::unique_ptr<broadcaster> broadcast = nullptr;
+    test_suite::server_set set;
+
+
+    // Got false positive data race on 'set' with
+    // these variables, but since the modification and the access
+    // can't happen at the same time, it is very unlikely a data race.
+    // Still i would like to soothe sanitizer,
+    // so atomic variables will be used for this case.
+    std::atomic<bool> send_broadcast = ATOMIC_VAR_INIT(false);
+    std::atomic<int> connect_chance = ATOMIC_VAR_INIT(0);
 
 
     // Set control server
@@ -65,15 +73,19 @@ int main()
         {
             // Copy message
             auto srv_set =
-                reinterpret_cast<const test_suite::server_set *>(ctx->data());
-            memcpy(set.get(), srv_set, sizeof(test_suite::server_set));
-            send_broadcast = srv_set->broadcast_delay_ms != 0;
+                *reinterpret_cast<const test_suite::server_set *>(ctx->data());
+            srv_set.to_host();
+
+            set = srv_set;
+            connect_chance = srv_set.connect_chance;
+            send_broadcast = srv_set.broadcast_delay_ms != 0;
+
             // Restart broadcaster
             broadcast->stop();
-            data->init_test_data(srv_set->test_entries);
-            broadcast->set_cfg(*srv_set);
+            data->set_limit(srv_set.min_send_bytes, srv_set.max_send_bytes);
+            broadcast->set_cfg(srv_set);
             broadcast->run();
-            TEST_INFO("rpc_command::init: Done");
+            TEST_INFO("rpc_command::init: Done\n" << srv_set);
             ctx->response.push_back(0x0);
         }
         else
@@ -125,7 +137,7 @@ int main()
                                   data->get_random_data(),
                                   std::unordered_set<uint64_t>{info.id});
             }
-            return rnd_bool(set->accept_chance);
+            return rnd_bool(set.accept_chance);
         }
         else
         {
@@ -137,9 +149,7 @@ int main()
     });
 
     srv.bind_listen([&](const std::string &ip) {
-        if (srv.connections() < 0)
-            stop_server();
-        return rnd_bool(set->connect_chance);
+        return rnd_bool(connect_chance);
     });
 
     srv.bind_disconnect([&](const session_info &info) {
@@ -157,52 +167,52 @@ int main()
     });
 
     srv.bind((uint32_t)rpc_command::echo, [&](session_context *ctx) {
-        auto ec = data->data_entry_valid(ctx->data(), ctx->size());
+        auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
             TEST_INFO("STRESS_RPC_ECHO: invalid " << (int)ec);
             stop_server();
             return;
         }
-        sleep_ms_rnd(set->min_delay_ms, set->max_delay_ms);
-        if (rnd_bool(set->response_chance))
+        sleep_ms_rnd(set.min_delay_ms, set.max_delay_ms);
+        if (rnd_bool(set.response_chance))
             ctx->response =
                 std::vector<char>(ctx->data(), ctx->data() + ctx->size());
-        if (rnd_bool(set->close_chance))
+        if (rnd_bool(set.close_chance))
             ctx->close();
     });
 
     srv.bind((uint32_t)rpc_command::send, [&](session_context *ctx) {
-        auto ec = data->data_entry_valid(ctx->data(), ctx->size());
+        auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
             TEST_INFO("rpc_command::send: invalid " << (int)ec);
             stop_server();
             return;
         }
-        sleep_ms_rnd(set->min_delay_ms, set->max_delay_ms);
-        if (rnd_bool(set->close_chance))
+        sleep_ms_rnd(set.min_delay_ms, set.max_delay_ms);
+        if (rnd_bool(set.close_chance))
             ctx->close();
     });
 
     srv.bind((uint32_t)rpc_command::send_recv, [&](session_context *ctx) {
-        auto ec = data->data_entry_valid(ctx->data(), ctx->size());
+        auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
             TEST_INFO("rpc_command::send_recv: invalid " << (int)ec);
             stop_server();
             return;
         }
-        sleep_ms_rnd(set->min_delay_ms, set->max_delay_ms);
-        if (rnd_bool(set->response_chance))
+        sleep_ms_rnd(set.min_delay_ms, set.max_delay_ms);
+        if (rnd_bool(set.response_chance))
             ctx->response = data->get_random_data();
-        if (rnd_bool(set->close_chance))
+        if (rnd_bool(set.close_chance))
             ctx->close();
     });
 
     // A bit heavy for the server to handle with many clients
     srv.bind((uint32_t)rpc_command::send_broadcast, [&](session_context *ctx) {
-        auto ec = data->data_entry_valid(ctx->data(), ctx->size());
+        auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
             TEST_INFO("rpc_command::send_broadcast: invalid " << (int)ec);
@@ -221,10 +231,10 @@ int main()
                               std::unordered_set<uint64_t>{ctx->id});
         }
 
-        sleep_ms_rnd(set->min_delay_ms, set->max_delay_ms);
-        if (rnd_bool(set->response_chance))
+        sleep_ms_rnd(set.min_delay_ms, set.max_delay_ms);
+        if (rnd_bool(set.response_chance))
             ctx->response = data->get_random_data();
-        if (rnd_bool(set->close_chance))
+        if (rnd_bool(set.close_chance))
             ctx->close();
     });
 
