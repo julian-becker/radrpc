@@ -74,6 +74,21 @@ inline void printf_bytes(const char *byteCode, size_t length)
     printf("\n");
 }
 
+inline bool compare_bytes(const char *lhs_data,
+                          std::size_t lhs_size,
+                          const char *rhs_data,
+                          std::size_t rhs_size)
+{
+    if (lhs_size != rhs_size)
+        return false;
+    for (auto i = 0; i < lhs_size; ++i)
+    {
+        if (lhs_data[i] != rhs_data[i])
+            return false;
+    }
+    return true;
+}
+
 template <typename T> T bytes_to_obj(std::vector<char> bytes)
 {
     T object_type = *reinterpret_cast<T *>(&bytes[0]);
