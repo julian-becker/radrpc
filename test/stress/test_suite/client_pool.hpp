@@ -60,7 +60,7 @@ class client_pool
     const client_timeout &m_cl_timeout;
 
     ///
-    test_data m_test_data;
+    std::unique_ptr<test_data> m_test_data;
 
     ///
     std::atomic<bool> m_running;
@@ -105,7 +105,7 @@ class client_pool
      * @return true
      * @return false
      */
-    bool set_wait_server();
+    bool set_wait_server(int seconds = 0);
 
     /**
      * @brief
@@ -123,7 +123,7 @@ class client_pool
      * @brief
      *
      */
-    void wait();
+    void wait(int seconds = 0);
 
     /**
      * @brief

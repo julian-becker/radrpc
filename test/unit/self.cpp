@@ -34,6 +34,7 @@
 
 #include <test/core/log.hpp>
 #include <test/core/random.hpp>
+#define private public
 #include <test/core/test_data.hpp>
 
 using namespace test::common;
@@ -52,7 +53,7 @@ TEST_CASE("utils")
         REQUIRE(rnd(0, 0) == 0);
         REQUIRE(rnd(100, 100) == 100);
         bool rnd_ok = true;
-        for (auto i = 0; i < 1000000; ++i)
+        for (auto i = 0; i < 100000; ++i)
         {
             auto n = rnd(-100, 100);
             if (!(n >= -100 && n <= 100))
@@ -65,7 +66,7 @@ TEST_CASE("utils")
 
         INFO("rnd_bool()");
         bool rnd__bool_ok = true;
-        for (auto i = 0; i < 1000000; ++i)
+        for (auto i = 0; i < 100000; ++i)
         {
             if (!rnd_bool(100) || rnd_bool(0))
             {
@@ -75,31 +76,117 @@ TEST_CASE("utils")
         }
         REQUIRE(rnd__bool_ok);
     }
+}
 
-    SECTION("test_data")
+TEST_CASE("test_data")
+{
+    TEST_DINFO("");
+    class test_data_access : public test_data
     {
-        TEST_DINFO("");
-        test_data tdata;
-        INFO("init_test_data_bytes()");
-        auto bytes = tdata.init_test_data_bytes(1000000);
-        REQUIRE((bytes <= 1000000 && bytes > 0));
+      public:
+        test_data_access() : test_data() {}
+    };
+    auto tdata = std::make_unique<test_data_access>();
+    uint32_t offset = 0;
+    const char *ptr = nullptr;
+    std::size_t size = 0;
 
-        INFO("get_random_data()");
-        auto in = tdata.get_random_data();
-        REQUIRE_FALSE(in.empty());
+    SECTION("throw")
+    {
+        REQUIRE_THROWS(tdata->get_random_data(offset, ptr, size));
+        REQUIRE_THROWS(tdata->set_limit(0, 0));
+        REQUIRE_THROWS(tdata->set_limit(2, 1));
+        REQUIRE_THROWS(tdata->set_limit(1, test_data::max_data_size));
+        REQUIRE_NOTHROW(tdata->set_limit(test_data::max_data_size - 1,
+                                         test_data::max_data_size - 1));
+    }
 
-        INFO("data_entry_valid() == data_state::valid");
-        REQUIRE(tdata.data_entry_valid(in) == data_state::valid);
-        REQUIRE(tdata.data_entry_valid(in.data(), in.size()) == data_state::valid);
+    SECTION("get_random_data - max_size | max_idx")
+    {
+        // get_random_data()
+        // min/max bytes are checked
+        {
+            // size = rnd(m_min_bytes, m_max_bytes);
+            size = test_data::max_data_size - 1;
+            // offset = rnd(0, m_max_idx);
+            offset = tdata->m_max_idx;
+            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            ptr = tdata->m_data_ptr + offset;
+        }
+        REQUIRE(offset + size <= tdata->m_max_idx);
+        // data_valid
+        std::vector<char> data(size, 0x0);
+        memcpy(data.data(), ptr, size);
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::valid);
+        data.back() = 'x';
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::corrupted);
+    }
 
-        INFO("data_entry_valid() == data_state::corrupted");
-        in[0] = 0x0;
-        REQUIRE(tdata.data_entry_valid(in) == data_state::corrupted);
-        REQUIRE(tdata.data_entry_valid(in.data(), in.size()) == data_state::corrupted);
+    SECTION("get_random_data - min_size | min_idx")
+    {
+        // get_random_data()
+        {
+            // size = rnd(m_min_bytes, m_max_bytes);
+            size = 1;
+            // offset = rnd(0, m_max_idx);
+            offset = 0;
+            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            ptr = tdata->m_data_ptr + offset;
+        }
+        REQUIRE(offset + size <= tdata->m_max_idx);
+        // data_valid
+        std::vector<char> data(size, 0x0);
+        memcpy(data.data(), ptr, size);
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::valid);
+        data.back() = 'x';
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::corrupted);
+    }
 
-        INFO("data_entry_valid() == data_state::not_found");
-        in.pop_back();
-        REQUIRE(tdata.data_entry_valid(in) == data_state::not_found);
-        REQUIRE(tdata.data_entry_valid(in.data(), in.size()) == data_state::not_found);
+    SECTION("get_random_data - max_size | min_idx")
+    {
+        // get_random_data()
+        { 
+            // size = rnd(m_min_bytes, m_max_bytes);
+            size = test_data::max_data_size - 1;
+            // offset = rnd(0, m_max_idx);
+            offset = 0;
+            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            ptr = tdata->m_data_ptr + offset;
+        }
+        REQUIRE(offset + size <= tdata->m_max_idx);
+        // data_valid
+        std::vector<char> data(size, 0x0);
+        memcpy(data.data(), ptr, size);
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::valid);
+        data.back() = 'x';
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::corrupted);
+    }
+
+    SECTION("get_random_data - min_size | max_idx")
+    {
+        // get_random_data()
+        {
+            // size = rnd(m_min_bytes, m_max_bytes);
+            size = 1;
+            // offset = rnd(0, m_max_idx);
+            offset = tdata->m_max_idx;
+            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            ptr = tdata->m_data_ptr + offset;
+        }
+        REQUIRE(offset + size <= tdata->m_max_idx);
+        // data_valid
+        std::vector<char> data(size, 0x0);
+        memcpy(data.data(), ptr, size);
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::valid);
+        data.back() = 'x';
+        REQUIRE(tdata->data_valid(offset, data.data(), data.size()) ==
+                data_state::corrupted);
     }
 }

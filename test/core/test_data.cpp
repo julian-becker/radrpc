@@ -22,115 +22,95 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
+#include <algorithm>
+
 #include <test/core/random.hpp>
 #include <test/core/test_data.hpp>
+#include <test/core/throw.hpp>
 
 namespace test {
 namespace core {
 
-void test_data::init_test_data(std::size_t entries)
+void test_data::get_random_data(uint32_t &offset,
+                                const char *&data,
+                                std::size_t &size) const
 {
-    m_entries = entries;
-    m_data = std::map<std::size_t, std::vector<char>>();
-    for (size_t i = 1; i <= m_entries; i++)
-    {
-        std::vector<char> rdata;
-        rdata.reserve(i);
-        for (size_t j = 0; j < i; j++)
-        {
-            rdata.insert(rdata.end(), m_sequence.begin(), m_sequence.end());
-        }
-        m_data.insert(
-            std::pair<std::size_t, std::vector<char>>(rdata.size(), rdata));
-    }
+    TEST_ASSERT(m_max_bytes > 0);
+    size = rnd(m_min_bytes, m_max_bytes);
+    offset = rnd(0, m_max_idx);
+    offset = std::min((uint32_t)(m_max_idx - size), offset);
+    data = m_data_ptr + offset;
 }
 
-std::size_t test_data::init_test_data_bytes(std::size_t max_size)
+data_state test_data::data_valid(uint32_t &offset,
+                                 const char *data,
+                                 std::size_t size) const
 {
-    m_data = std::map<std::size_t, std::vector<char>>();
-    const std::size_t seq_size = m_sequence.size();
-    std::size_t byte_counter = 0;
-    m_entries = 0;
-
-    while (true)
-    {
-        ++m_entries;
-        const std::size_t rdata_size = seq_size * m_entries;
-        if (byte_counter + rdata_size >= max_size)
-            break;
-
-        std::vector<char> rdata;
-        rdata.reserve(m_entries);
-        for (size_t j = 0; j < m_entries; j++)
-        {
-            rdata.insert(rdata.end(), m_sequence.begin(), m_sequence.end());
-        }
-
-        m_data.insert(
-            std::pair<std::size_t, std::vector<char>>(rdata.size(), rdata));
-        byte_counter += rdata_size;
-    }
-
-    m_entries = m_data.size();
-    return byte_counter;
-}
-
-const std::vector<char> test_data::get_random_data() const
-{
-    auto idx = rnd((std::size_t)0, m_entries - 1);
-    std::size_t c = 0;
-    for (const auto &d : m_data)
-    {
-        if (c == idx)
-            return std::vector<char>(d.second);
-        ++c;
-    }
-    return std::vector<char>();
-}
-
-data_state test_data::data_entry_valid(const std::vector<char> &data) const
-{
-    auto data_itr = m_data.find(data.size());
-    if (data_itr == m_data.end())
-        return data_state::not_found;
-    if (data != data_itr->second)
-    {
+    if (offset + size > m_max_idx)
         return data_state::corrupted;
-    }
-    return data_state::valid;
-}
 
-data_state test_data::data_entry_valid(const char *data,
-                                       std::size_t data_size) const
-{
-    auto data_itr = m_data.find(data_size);
-    if (data_itr == m_data.end() || data_size == 0)
-        return data_state::not_found;
-    for (auto i = 0; i < data_size; ++i)
+    auto ptr = m_data_ptr + offset;
+    for (std::size_t i = 0; i < size; i++)
     {
-        if (data_itr->second[i] != data[i])
-        {
+        if (*(ptr + i) != data[i])
             return data_state::corrupted;
-        }
     }
     return data_state::valid;
 }
 
-bool test_data::data_compare(const char *lhs_data,
-                             std::size_t lhs_size,
-                             const char *rhs_data,
-                             std::size_t rhs_size) const
+test_data::test_data() :
+    m_data{},
+    m_data_ptr(reinterpret_cast<const char *>(&m_data)),
+    m_data_size(sizeof(m_data)),
+    m_max_idx(m_data_size - 1),
+    m_min_bytes(0),
+    m_max_bytes(0)
 {
-    if (lhs_size != rhs_size)
-        return false;
-    for (auto i = 0; i < lhs_size; ++i)
-    {
-        if (lhs_data[i] != rhs_data[i])
-        {
-            return false;
-        }
-    }
-    return true;
+    static_assert(sizeof(byte_sequence) == sequence_size,
+                  "byte_sequence size invalid");
+    static_assert(sizeof(m_data) == sequence_size * byte_sequences,
+                  "data size invalid");
+}
+
+void test_data::set_limit(std::size_t min_size, std::size_t max_size)
+{
+    TEST_ASSERT(min_size > 0);
+    TEST_ASSERT(min_size <= max_size);
+    TEST_ASSERT(max_size < m_data_size);
+    m_min_bytes = min_size;
+    m_max_bytes = max_size;
+}
+
+std::vector<char> test_data::get_random_data() const
+{
+    uint32_t offset = 0;
+    const char *data = nullptr;
+    std::size_t size = 0;
+    get_random_data(offset, data, size);
+
+    std::vector<char> data_out(sizeof(uint32_t) + size, 0x0);
+    *reinterpret_cast<uint32_t *>(data_out.data()) = offset;
+    memcpy(data_out.data() + sizeof(uint32_t), data, size);
+
+    return data_out;
+}
+
+data_state test_data::data_valid(const char *data, std::size_t size) const
+{
+    // Data buffer needs atleast 1 byte
+    if (size <= sizeof(uint32_t))
+        return data_state::corrupted;
+
+    uint32_t offset = *reinterpret_cast<const uint32_t *>(data);
+    const char *buffer_data = data + sizeof(uint32_t);
+    std::size_t buffer_size = size - sizeof(uint32_t);
+
+    return data_valid(offset, buffer_data, buffer_size);
+}
+
+data_state test_data::data_valid(const std::vector<char> &data) const
+{
+    return data_valid(data.data(), data.size());
 }
 
 } // namespace core

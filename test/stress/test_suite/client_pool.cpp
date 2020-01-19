@@ -42,10 +42,10 @@ using namespace test::common;
 
 void client_pool::listen_handler(receive_buffer &data)
 {
-    auto ec = m_test_data.data_entry_valid(data.data(), data.size());
+    auto ec = m_test_data->data_valid(data.data(), data.size());
     if (ec != data_state::valid)
     {
-        RAD_THROW("Error " << m_current_test_case << " listen_handler "
+        TEST_THROW("Error: " << m_current_test_case << " listen_handler "
                            << data.size() << " / " << data
                            << "\ndata_state:" << (int)ec);
         m_running = false;
@@ -60,13 +60,13 @@ client_pool::client_pool(const client_set &p_cl_set,
     m_srv_set(p_srv_set),
     m_cl_cfg(p_cl_cfg),
     m_cl_timeout(p_cl_timeout),
-    m_test_data({}),
+    m_test_data(new test_data()),
     m_running(false),
     m_pool(p_cl_set.max_threads, p_cl_set.max_threads * 2),
     m_current_test_case("")
 {
     // Initialize test data
-    m_test_data.init_test_data(m_srv_set.test_entries);
+    m_test_data->set_limit(m_srv_set.min_send_bytes, m_srv_set.max_send_bytes);
 
     // Set handshake
     handshake_request req;
@@ -91,7 +91,7 @@ client_pool::client_pool(const client_set &p_cl_set,
                 std::strlen(ssl_test_files::client_certificate)),
             ec);
         if (ec)
-            RAD_THROW(
+            TEST_THROW(
                 "+client_pool: add_certificate_authority: " << ec.message());
         // Create ssl client
         m_ssl_clients.emplace_back(std::make_unique<client::ssl>(
@@ -125,20 +125,21 @@ void client_pool::set_test_case(const std::string &name)
     m_current_test_case = name;
 }
 
-bool client_pool::set_wait_server()
+bool client_pool::set_wait_server(int seconds)
 {
+    if (seconds == 0)
+        seconds = 5;
     auto cfg = default_client_config();
     cfg.port = 3378;
     auto timeout = default_client_timeout();
-    // It takes some time to initialize the test data serverside with big
-    // data
-    timeout.response_timeout =
-        std::chrono::seconds(10) * m_srv_set.test_entries;
+    timeout.response_timeout = std::chrono::seconds(seconds);
     client::plain cl(cfg, timeout);
     if (cl.connect(10, std::chrono::seconds(1)))
     {
-        auto settings_bytes = obj_to_bytes(m_srv_set);
-        auto recv_bytes = cl.send_recv((int)rpc_command::init, settings_bytes);
+        auto net_srv_set = m_srv_set;
+        net_srv_set.to_network();
+        auto recv_bytes =
+            cl.send_recv((int)rpc_command::init, obj_to_bytes(net_srv_set));
         return !recv_bytes.empty();
     }
     return false;
@@ -148,9 +149,11 @@ void client_pool::connect_clients()
 {
     for (uint32_t i = 0; i < m_cl_set.clients_per_mode; ++i)
     {
-        m_plain_clients[i]->connect();
+        if (!m_plain_clients[i]->connect())
+            TEST_THROW("Error client couldn't connect");
 #ifdef RADRPC_SSL_SUPPORT
-        m_ssl_clients[i]->connect();
+        if (!m_ssl_clients[i]->connect())
+            TEST_THROW("Error client couldn't connect");
 #endif
     }
 }
@@ -183,9 +186,11 @@ void client_pool::run()
     });
 }
 
-void client_pool::wait()
+void client_pool::wait(int seconds)
 {
-    std::this_thread::sleep_for(std::chrono::seconds(m_cl_set.runtime_secs));
+    if (seconds == 0)
+        seconds = m_cl_set.runtime_secs;
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
 void client_pool::stop()
@@ -199,7 +204,7 @@ template <class Clients> bool client_pool::pulse(Clients &clients)
 {
     int idx = rnd(0, m_cl_set.clients_per_mode - 1);
     auto action = (rpc_command)rnd(0, (int)rpc_command::init - 1);
-    const std::vector<char> rdata = m_test_data.get_random_data();
+    const std::vector<char> rdata = m_test_data->get_random_data();
 
     if (!execute_action(clients, idx, action, rdata))
         return false;
@@ -241,14 +246,14 @@ bool client_pool::execute_action(Clients &clients,
                  m_cl_set.restart_chance != 0 ||     //
                  m_cl_set.timeout_ms != defaults::wait_response_ms))
                 break;
-            if (!m_test_data.data_compare(recv_bytes.data(),
-                                          recv_bytes.size(),
-                                          data.data(),
-                                          data.size()))
+            if (!compare_bytes(recv_bytes.data(),
+                               recv_bytes.size(),
+                               data.data(),
+                               data.size()))
             {
-                RAD_THROW("Error " << m_current_test_case
-                                   << " rpc_command::echo " << recv_bytes.size()
-                                   << " != " << data.size());
+                TEST_THROW("Error: "
+                           << m_current_test_case << " rpc_command::echo "
+                           << recv_bytes.size() << " != " << data.size());
                 return false;
             }
             break;
@@ -264,11 +269,10 @@ bool client_pool::execute_action(Clients &clients,
                  m_cl_set.restart_chance != 0 ||     //
                  m_cl_set.timeout_ms != defaults::wait_response_ms))
                 break;
-            auto ec = m_test_data.data_entry_valid(recv_bytes.data(),
-                                                   recv_bytes.size());
+            auto ec = m_test_data->data_valid(recv_bytes.data(), recv_bytes.size());
             if (ec != data_state::valid)
             {
-                RAD_THROW("Error " << m_current_test_case
+                TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::send_recv "
                                    << recv_bytes.size() << " / " << data_size
                                    << "\ndata_state:" << (int)ec);
@@ -284,7 +288,7 @@ bool client_pool::execute_action(Clients &clients,
                 !m_cl_set.random_send_timeout &&                      //
                 m_cl_set.disconnect_chance == 0)
             {
-                RAD_THROW("Error " << m_current_test_case
+                TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::send failed to send");
                 return false;
             }
@@ -301,11 +305,11 @@ bool client_pool::execute_action(Clients &clients,
                  m_cl_set.restart_chance != 0 ||     //
                  m_cl_set.timeout_ms != defaults::wait_response_ms))
                 break;
-            auto ec = m_test_data.data_entry_valid(recv_bytes.data(),
-                                                   recv_bytes.size());
+            auto ec =
+                m_test_data->data_valid(recv_bytes.data(), recv_bytes.size());
             if (ec != data_state::valid)
             {
-                RAD_THROW("Error " << m_current_test_case
+                TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::send_broadcast "
                                    << recv_bytes.size() << " / " << data_size
                                    << "\ndata_state:" << (int)ec);
@@ -320,7 +324,7 @@ bool client_pool::execute_action(Clients &clients,
                 m_cl_set.timeout_ms == defaults::wait_response_ms)
 
             {
-                RAD_THROW("Error " << m_current_test_case
+                TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::ping");
                 return false;
             }

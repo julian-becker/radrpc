@@ -25,6 +25,7 @@
 #ifndef RADRPC_TEST_CORE_TEST_DATA_HPP
 #define RADRPC_TEST_CORE_TEST_DATA_HPP
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <vector>
@@ -36,53 +37,99 @@ namespace core {
 
 class test_data
 {
-    /// 
-    std::size_t m_entries;
+    public:
+      const static std::size_t sequence_size = 16;
+      const static std::size_t byte_sequences = 0xFFFFF;
+      const static std::size_t max_data_size = byte_sequences * sequence_size;
 
-    /// 
-    const std::vector<char> m_sequence = {
-        0x1,
-        0x2,
-        0x3,
-        0x4,
-        0x5,
-        0x6,
-        0x7,
-        0x8,
-        0x9,
-        0xA,
-        0xB,
-        0xC,
-        0xD,
-        0xE,
+    private:
+
+#ifdef _WIN32
+#pragma pack(push, 1)
+    struct byte_sequence
+#else
+    struct __attribute__((packed)) byte_sequence
+#endif
+    {
+        char byte[sequence_size] = {
+            0x0,
+            0x1,
+            0x2,
+            0x3,
+            0x4,
+            0x5,
+            0x6,
+            0x7,
+            0x8,
+            0x9,
+            0xA,
+            0xB,
+            0xC,
+            0xD,
+            0xE,
+            0xF,
+        };
     };
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
 
-    /// 
-    std::map<std::size_t, std::vector<char>> m_data;
-
-  public:
-
-    /**
-     * @brief 
-     * 
-     * @param entries 
-     */
-    void init_test_data(std::size_t entries);
-
-    /**
-     * @brief 
-     * 
-     * @param max_size 
-     * @return std::size_t 
-     */
-    std::size_t init_test_data_bytes(std::size_t max_size);
+    const byte_sequence m_data[byte_sequences];
+    const char *m_data_ptr;
+    const std::size_t m_data_size;
+    const std::size_t m_max_idx;
+    std::size_t m_min_bytes;
+    std::size_t m_max_bytes;
 
     /**
      * @brief Get the random data object
      * 
-     * @return const std::vector<char> 
+     * @param offset 
+     * @param data 
+     * @param size 
      */
-    const std::vector<char> get_random_data() const;
+    void get_random_data(uint32_t &offset,
+                         const char *&data,
+                         std::size_t &size) const;
+
+    /**
+     * @brief 
+     * 
+     * @param offset 
+     * @param data 
+     * @param size 
+     * @return data_state 
+     */
+    data_state data_valid(uint32_t &offset,
+                          const char *data,
+                          std::size_t size) const;
+
+  public:
+    test_data();
+
+    /**
+     * @brief Set the limit object
+     * 
+     * @param min_size 
+     * @param max_size 
+     */
+    void set_limit(std::size_t min_size, std::size_t max_size);
+
+    /**
+     * @brief Get the random data object
+     * 
+     * @return std::vector<char> 
+     */
+    std::vector<char> get_random_data() const;
+
+    /**
+     * @brief 
+     * 
+     * @param data 
+     * @param size 
+     * @return data_state 
+     */
+    data_state data_valid(const char *data, std::size_t size) const;
 
     /**
      * @brief 
@@ -90,31 +137,7 @@ class test_data
      * @param data 
      * @return data_state 
      */
-    data_state data_entry_valid(const std::vector<char> &data) const;
-
-    /**
-     * @brief 
-     * 
-     * @param data 
-     * @param data_size 
-     * @return data_state 
-     */
-    data_state data_entry_valid(const char *data, std::size_t data_size) const;
-
-    /**
-     * @brief 
-     * 
-     * @param lhs_data 
-     * @param lhs_size 
-     * @param rhs_data 
-     * @param rhs_size 
-     * @return true 
-     * @return false 
-     */
-    bool data_compare(const char *lhs_data,
-                      std::size_t lhs_size,
-                      const char *rhs_data,
-                      std::size_t rhs_size) const;
+    data_state data_valid(const std::vector<char> &data) const;
 };
 
 } // namespace core
