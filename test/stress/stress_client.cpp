@@ -77,11 +77,14 @@ void set_defaults(test_suite::client_set &cl_set,
 void run(const test_suite::client_set &cl_set,
          const test_suite::server_set &srv_set,
          const client_config &cl_cfg,
-         const client_timeout &cl_timeout)
+         const client_timeout &cl_timeout,
+         bool connect_clients = false)
 {
     auto cp = std::make_unique<test_suite::client_pool>(
         cl_set, srv_set, cl_cfg, cl_timeout);
     cp->set_wait_server();
+    if (connect_clients)
+        cp->connect_clients();
     cp->run();
     cp->wait();
     cp->stop();
@@ -90,19 +93,21 @@ void run(const test_suite::client_set &cl_set,
 void run_destruct(test_suite::client_set cl_set,
                   const test_suite::server_set &srv_set,
                   const client_config &cl_cfg,
-                  const client_timeout &cl_timeout)
+                  const client_timeout &cl_timeout,
+                  bool connect_clients = false)
 {
-    const int div = 100;
-    cl_set.runtime_secs =
-        (uint32_t)std::min(((float)cl_set.runtime_secs) / div, 2.0f);
-    for (std::size_t i = 0; i < div; i++)
+    for (std::size_t i = 0; i < cl_set.runtime_secs;)
     {
+        const int run_seconds = rnd(3, 7);
         auto cp = std::make_unique<test_suite::client_pool>(
             cl_set, srv_set, cl_cfg, cl_timeout);
         cp->set_wait_server();
+        if (connect_clients)
+            cp->connect_clients();
         cp->run();
-        cp->wait();
+        cp->wait(run_seconds);
         cp->stop();
+        i += run_seconds;
     }
 }
 
@@ -148,16 +153,35 @@ TEST_CASE("basic")
     cl_timeout.response_timeout =
         std::chrono::milliseconds(defaults::wait_response_ms);
 
-    INFO("Run 'basic'\nclient_set:\n" << cl_set << "server_set:\n" << srv_set);
-
-    // Manually connect clients with 'random_send_timeout = false'
+    // Connect clients with 'random_send_timeout = false'
     auto cp = std::make_unique<test_suite::client_pool>(
         cl_set, srv_set, cl_cfg, cl_timeout);
-    cp->set_wait_server();
-    cp->connect_clients();
-    cp->run();
-    cp->wait();
-    cp->stop();
+
+    SECTION("normal")
+    {
+        INFO("Run 'basic - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout, true);
+    }
+
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'basic - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout, true);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'basic - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout, true);
+    }
 }
 
 TEST_CASE("reject_listener - reject clients in listener")
@@ -171,11 +195,31 @@ TEST_CASE("reject_listener - reject clients in listener")
 
     srv_set.connect_chance = 80;
 
-    INFO("Run 'reject_listener'\nclient_set:\n"
-         << cl_set << "server_set:\n"
-         << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'reject_listener - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'reject_listener - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'reject_listener - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("reject_session - reject clients in session")
@@ -189,11 +233,31 @@ TEST_CASE("reject_session - reject clients in session")
 
     srv_set.accept_chance = 80;
 
-    INFO("Run 'reject_session'\nclient_set:\n"
-         << cl_set << "server_set:\n"
-         << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'reject_session - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'reject_session - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'reject_session - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("restart - restarts the server")
@@ -207,11 +271,31 @@ TEST_CASE("restart - restarts the server")
 
     cl_set.restart_chance = 20;
 
-    INFO("Run 'restart'\nclient_set:\n"
-         << cl_set << "server_set:\n"
-         << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'restart - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'restart - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'restart - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("disconnect - disconnect clients")
@@ -227,11 +311,31 @@ TEST_CASE("disconnect - disconnect clients")
 
     cl_set.disconnect_chance = 20;
 
-    INFO("Run 'disconnect'\nclient_set:\n"
-         << cl_set << "server_set:\n"
-         << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'disconnect - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'disconnect - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'disconnect - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("no_response - server sends no response")
@@ -245,11 +349,31 @@ TEST_CASE("no_response - server sends no response")
 
     srv_set.response_chance = 80;
 
-    INFO("Run 'no_response'\nclient_set:\n"
-         << cl_set << "server_set:\n"
-         << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'no_response - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'no_response - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'no_response - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("close - server closes connections")
@@ -263,9 +387,31 @@ TEST_CASE("close - server closes connections")
 
     srv_set.close_chance = 20;
 
-    INFO("Run 'close'\nclient_set:\n" << cl_set << "server_set:\n" << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'close - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'close - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'close - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
 
 TEST_CASE("all")
@@ -276,7 +422,7 @@ TEST_CASE("all")
     auto cl_timeout = default_client_timeout();
 
     set_defaults(cl_set, srv_set, cl_cfg, cl_timeout);
-    
+
     cl_set.restart_chance = 20;
     cl_set.disconnect_chance = 20;
 
@@ -285,31 +431,31 @@ TEST_CASE("all")
     srv_set.response_chance = 80;
     srv_set.close_chance = 20;
 
-    INFO("Run 'all'\nclient_set:\n" << cl_set << "server_set:\n" << srv_set);
+    SECTION("normal")
+    {
+        INFO("Run 'all - normal'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 
-    run(cl_set, srv_set, cl_cfg, cl_timeout);
+    SECTION("broadcast")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'all - broadcast'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
+
+    SECTION("destruct")
+    {
+        srv_set.broadcast_delay_ms = 1000;
+        INFO("Run 'all - destruct'\nclient_set:\n"
+             << cl_set << "server_set:\n"
+             << srv_set);
+        run_destruct(cl_set, srv_set, cl_cfg, cl_timeout);
+    }
 }
-
-////////////////////////////////////////////////////////
-// Test cases with broadcast, since this may have
-// a big impact on the session manager
-// Todo tidy this up
-////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////
-// Test cases with broadcast & client destruct
-////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
 
 TEST_CASE("shutdown server") { shutdown_server(); }
