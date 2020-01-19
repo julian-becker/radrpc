@@ -71,6 +71,21 @@ bool data_compare(const char *lhs_data,
     return true;
 }
 
+struct endianness_test_data
+{
+    static constexpr uint32_t sample4_bytes = 0x01020304;
+    static constexpr uint8_t sample1st_byte = (const uint8_t &)sample4_bytes;
+};
+
+static_assert(endianness_test_data::sample1st_byte == 0x04 ||
+                  endianness_test_data::sample1st_byte == 0x01,
+              "system must be either little or big endian");
+
+constexpr bool system_little_endian()
+{
+    return endianness_test_data::sample1st_byte == 0x04;
+}
+
 
 
 
@@ -378,5 +393,34 @@ TEST_CASE("receive_buffer wrapper")
                                    buffer.size(),
                                    bytes.data(),
                                    bytes.size()));
+    }
+}
+
+TEST_CASE("endianness")
+{
+    SECTION("host to network")
+    {
+        TEST_DINFO("");
+        radrpc::common::io_header header(5, 0);
+        header.call_id = htonl(header.call_id);
+        REQUIRE((
+            // if system is big endian the value will not change
+            (!system_little_endian() && header.call_id == 5) //
+            ||
+            // if system is little endian the value will change
+            (system_little_endian() && header.call_id == 83886080)));
+    }
+
+    SECTION("network to host")
+    {
+        TEST_DINFO("");
+        radrpc::common::io_header header(83886080, 0);
+        header.call_id = ntohl(header.call_id);
+        REQUIRE((
+            // if system is big endian the value will not change
+            (!system_little_endian() && header.call_id == 83886080) //
+            ||
+            // if system is little endian the value will change
+            (system_little_endian() && header.call_id == 5)));
     }
 }
