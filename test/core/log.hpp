@@ -25,6 +25,7 @@
 #ifndef TEST_TEST_CORE_LOG_HPP
 #define TEST_TEST_CORE_LOG_HPP
 
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <mutex>
