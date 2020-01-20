@@ -70,12 +70,12 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
         endforeach()
         endif()
 
-        if (BIN_MSAN AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if (BUILD_WITH_MSAN AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BIN_VALGRIND)
+        if(BUILD_WITH_VALGRIND)
 
             message("Set target: test_valgrind")
 

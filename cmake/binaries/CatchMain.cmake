@@ -47,7 +47,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BIN_VALGRIND)
+        if(BUILD_WITH_VALGRIND)
 
             message("Set target: catch_main_valgrind")
 
