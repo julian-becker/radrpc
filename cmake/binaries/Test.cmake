@@ -81,6 +81,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
             # Build obj
             add_library(test_valgrind_obj OBJECT ${TEST_SRC})
+            target_include_directories(test_valgrind_obj PRIVATE ${RADRPC_INCLUDE} ${RADRPC_TEST_INCLUDE})
             target_compile_options(test_valgrind_obj PRIVATE ${COMPILER_FLAGS})
             set_target_properties(test_valgrind_obj PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)

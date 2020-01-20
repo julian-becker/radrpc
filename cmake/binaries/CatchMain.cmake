@@ -53,6 +53,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
             # Build obj
             add_library(catch_main_obj_valgrind OBJECT ${CATCH_MAIN_SRC})
+            target_include_directories(catch_main_obj_valgrind PRIVATE ${RADRPC_INCLUDE} ${RADRPC_TEST_INCLUDE})
             target_compile_options(catch_main_obj_valgrind PRIVATE ${COMPILER_FLAGS})
             set_target_properties(catch_main_obj_valgrind PROPERTIES LINK_FLAGS "${LINKER_FLAGS}")
             if (BUILD_INTERNAL_SHARED)
