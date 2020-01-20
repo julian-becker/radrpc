@@ -25,6 +25,12 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             target_link_libraries(${BINARY} ${LINK_LIBRARIES} radrpc_static test_static)
         endif()
 
+        # Add test
+        if (IMPL_CATCH)
+            add_test(TEST_${BINARY} ${BINARY})
+            set_tests_properties(TEST_${BINARY} PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT}")
+        endif()
+
     # Build instrumted on other platforms
     else()
 
@@ -62,11 +68,17 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
                 target_link_libraries(${BINARY}_${SANTIZER} ${LINK_LIBRARIES_} radrpc_static_${SANTIZER} test_static_${SANTIZER})
             endif()
 
+            # Add test
+            if (IMPL_CATCH)
+                add_test(TEST_${BINARY}_${SANTIZER} ${BINARY}_${SANTIZER})
+                set_tests_properties(TEST_${BINARY}_${SANTIZER} PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT}")
+            endif()
+
         endforeach()
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BIN_VALGRIND)
+        if(BUILD_WITH_VALGRIND)
 
             message("Set target: ${BINARY}_valgrind")
 
@@ -88,6 +100,14 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             else()
                 # Link static library
                 target_link_libraries(${BINARY}_valgrind ${LINK_LIBRARIES} radrpc_static test_valgrind_static)
+            endif()
+
+            # Add test
+            if (IMPL_CATCH)
+                add_test(
+                    NAME TEST_${BINARY}_valgrind
+                    COMMAND ${CMAKE_COMMAND} -E env
+                    valgrind ${VALGRIND_ARGS} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY}_valgrind)
             endif()
 
         endif()
