@@ -1,6 +1,7 @@
 set(RADRPC_INCLUDE
-        "${PROJECT_SOURCE_DIR}"
-        "${PROJECT_SOURCE_DIR}/include/")
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${INSTALL_HEADER_DIR}>
+        $<INSTALL_INTERFACE:${INSTALL_LIB_DIR}>)
 
 if (SUPPORT_SSL)
     set(RADRPC_INCLUDE
@@ -13,5 +14,6 @@ set(RADRPC_INCLUDE
         "${Boost_INCLUDE_DIRS}")
 
 set(RADRPC_TEST_INCLUDE
-        "${TEST_DIR}/"
-        "${TEST_DIR}/dep/")
+        "${PROJECT_SOURCE_DIR}"
+        "${TEST_DIR}"
+        "${TEST_DIR}/dep")
