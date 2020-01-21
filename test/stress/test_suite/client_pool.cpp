@@ -319,13 +319,14 @@ bool client_pool::execute_action(Clients &clients,
         }
         case rpc_command::ping:
         {
-            if (!clients[client_idx]->ping() && m_srv_set.close_chance == 0 &&
-                m_cl_set.restart_chance == 0 && !m_cl_set.random_send_timeout &&
+            if (!clients[client_idx]->ping() &&  //
+                m_srv_set.close_chance == 0 &&   //
+                m_cl_set.restart_chance == 0 &&  //
+                !m_cl_set.random_send_timeout && //
                 m_cl_set.timeout_ms == defaults::wait_response_ms)
-
             {
                 TEST_THROW("Error: " << m_current_test_case
-                                   << " rpc_command::ping");
+                                     << " rpc_command::ping");
                 return false;
             }
             break;

@@ -458,4 +458,8 @@ TEST_CASE("all")
     }
 }
 
-TEST_CASE("shutdown server") { shutdown_server(); }
+TEST_CASE("shutdown server")
+{
+    INFO("Shutdown");
+    shutdown_server();
+}
