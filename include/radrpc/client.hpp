@@ -126,9 +126,6 @@ class client
         /// The response handshake from the server.
         handshake_response m_res_handshake;
 
-        /// Used to check if client is going to exit.
-        bool m_exit;
-
         /**
          * Used to notfiy the condition variable.
          * @param p

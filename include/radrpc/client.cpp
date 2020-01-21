@@ -22,14 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#include <condition_variable>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <shared_mutex>
-#include <thread>
-#include <vector>
-
 #include <radrpc/client.hpp>
 #include <radrpc/debug/log.hpp>
 #include <radrpc/impl/client/connector.hpp>
@@ -72,9 +64,9 @@ void client::base::init()
 
 void client::base::destruct()
 {
+    // If destructor is called there shouldn't 
+    // be any pending functions anyway
     RADRPC_LOG("client::destruct");
-    m_session_mtx.lock();
-    m_exit = true;
 
 #ifdef RADRPC_SSL_SUPPORT
     if (m_is_ssl)
@@ -97,7 +89,6 @@ void client::base::destruct()
 
     if (m_io_worker.joinable())
         m_io_worker.join();
-    m_session_mtx.unlock();
 }
 
 bool client::base::wait_destruction()
@@ -135,10 +126,9 @@ bool client::base::construct_session()
 
 bool client::base::construct_plain_session()
 {
-    RADRPC_LOG("client::construct_plain_session");
     if (!check_construct())
         return true;
-
+    RADRPC_LOG("client::construct_plain_session");
     std::shared_ptr<connector_plain> ptr(
         new connector_plain(*m_io_ctx.get(),
                             m_io_worker,
@@ -156,9 +146,9 @@ bool client::base::construct_plain_session()
 
 bool client::base::construct_ssl_session()
 {
-    RADRPC_LOG("client::construct_ssl_session");
     if (!check_construct())
         return true;
+    RADRPC_LOG("client::construct_ssl_session");
     std::shared_ptr<connector_ssl> ptr(
         new connector_ssl(*m_io_ctx.get(),
                           m_ssl_ctx,
@@ -185,8 +175,7 @@ client::base::base(client_config p_client_cfg,
     m_io_ctx(new boost::asio::io_context()),
     m_client_cfg(std::move(p_client_cfg)),
     m_client_timeout(p_client_timeout),
-    m_timeout({}),
-    m_exit(false)
+    m_timeout({})
 {
     init();
 }
@@ -202,8 +191,7 @@ client::base::base(client_config p_client_cfg,
     m_io_ctx(new boost::asio::io_context()),
     m_client_cfg(std::move(p_client_cfg)),
     m_client_timeout(p_client_timeout),
-    m_timeout({}),
-    m_exit(false)
+    m_timeout({})
 {
     init();
     RADRPC_LOG("+client::base");
@@ -218,8 +206,6 @@ bool client::base::listen_broadcast(
     std::function<void(receive_buffer &)> handler)
 {
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return false;
     std::unique_lock<std::mutex> lock(m_expired_mtx);
     if (!m_expired)
         RADRPC_THROW("client::listen_broadcast: Cannot assign listen "
@@ -238,8 +224,6 @@ bool client::base::connect()
 {
     RADRPC_LOG("client::connect");
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return false;
     bool result = construct_session();
     return result;
 }
@@ -247,8 +231,6 @@ bool client::base::connect()
 bool client::base::connect(unsigned int attempts, duration delay)
 {
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return false;
     for (unsigned int i = 0; i < attempts; ++i)
     {
         if (i != 0)
@@ -274,8 +256,6 @@ void client::base::disconnect()
 {
     RADRPC_LOG("client::disconnect");
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return;
 
 #ifdef RADRPC_SSL_SUPPORT
     if (m_is_ssl)
@@ -298,8 +278,6 @@ bool client::base::ping()
 {
     RADRPC_LOG("client::ping");
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return false;
     if (!construct_session())
         return false;
 
@@ -331,9 +309,7 @@ bool client::base::send(uint32_t call_id,
         boost::system::error_code ec;
         {
             std::shared_lock<std::shared_timed_mutex> read_lock(m_session_mtx);
-            if (m_exit)
-                return false;
-                // Send
+            // Send
 #ifdef RADRPC_SSL_SUPPORT
             if (m_is_ssl)
             {
@@ -384,9 +360,7 @@ receive_buffer client::base::send_recv(uint32_t call_id,
         boost::system::error_code ec;
         {
             std::shared_lock<std::shared_timed_mutex> read_lock(m_session_mtx);
-            if (m_exit)
-                return result;
-                // Send
+            // Send
 #ifdef RADRPC_SSL_SUPPORT
             if (m_is_ssl)
             {
@@ -430,16 +404,12 @@ receive_buffer client::base::send_recv(uint32_t call_id,
 void client::base::set_handshake_request(handshake_request &req_handshake)
 {
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return;
     m_req_handshake = req_handshake;
 }
 
 handshake_response client::base::get_handshake_response()
 {
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
-    if (m_exit)
-        return handshake_response{};
 #ifdef RADRPC_SSL_SUPPORT
     if (m_is_ssl)
     {
