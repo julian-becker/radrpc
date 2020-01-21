@@ -50,6 +50,7 @@
 #include <radrpc/common/connection_state.hpp>
 #include <radrpc/common/receive_buffer.hpp>
 #include <radrpc/common/streams.hpp>
+#include <radrpc/core/endian.hpp>
 #include <radrpc/core/timeout.hpp>
 #include <radrpc/core/weak_post.hpp>
 #include <radrpc/core/data/cache.hpp>
@@ -61,6 +62,7 @@ namespace client {
 
 using namespace radrpc::common;
 using namespace radrpc::core;
+using namespace radrpc::core::endian;
 
 template <typename T> class connector;
 
@@ -159,7 +161,7 @@ template <class Derived> class session
             return;
         // Convert to network byte order (big endian)
         if (!m_queue.queue_data(
-                htonl(call_id), htonl(result_id), callback, data_ptr, data_size))
+                htonl(call_id), htonl_uint64(result_id), callback, data_ptr, data_size))
             return;
         if (m_queue.is_writing())
             return;
@@ -251,7 +253,7 @@ template <class Derived> class session
 
             // Convert to host byte order
             header->call_id = ntohl(header->call_id);
-            header->result_id = ntohl(header->result_id);
+            header->result_id = ntohl_uint64(header->result_id);
 
             auto func_itr = derived().m_bound_funcs->find(header->call_id);
             m_read_buffer.consume(sizeof(io_header));

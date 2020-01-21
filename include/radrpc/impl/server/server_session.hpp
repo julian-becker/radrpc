@@ -32,6 +32,7 @@
 #include <radrpc/common/server_config.hpp>
 #include <radrpc/common/server_timeout.hpp>
 #include <radrpc/common/session_context.hpp>
+#include <radrpc/core/endian.hpp>
 #include <radrpc/core/data/push.hpp>
 #include <radrpc/debug/log.hpp>
 #include <radrpc/impl/server/session_accept.hpp>
@@ -43,6 +44,7 @@ namespace server {
 
 using namespace radrpc::common;
 using namespace radrpc::core;
+using namespace radrpc::core::endian;
 
 /**
  * Represents a server session to communicate with the client.
@@ -99,7 +101,7 @@ template <class Derived> class server_session : private session_context
 
             // Convert to host byte order
             m_header.call_id = ntohl(m_header.call_id);
-            m_header.result_id = ntohl(m_header.result_id);
+            m_header.result_id = ntohl_uint64(m_header.result_id);
 
             uint32_t call_id = m_header.call_id;
             auto func_itr = m_manager->bound_funcs.find(call_id);
@@ -126,7 +128,7 @@ template <class Derived> class server_session : private session_context
                     {
                         // Convert to network byte order (big endian)
                         m_header.call_id = htonl(m_header.call_id);
-                        m_header.result_id = htonl(m_header.result_id);
+                        m_header.result_id = htonl_uint64(m_header.result_id);
 
                         const auto push =
                             new data::push(m_header, std::move(response));
