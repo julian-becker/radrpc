@@ -55,10 +55,10 @@ constexpr std::size_t handshake_max_bytes = 1024;
 constexpr std::size_t queue_recv_max_bytes = 500;
 constexpr std::size_t queue_send_max_bytes = 500;
 
-constexpr duration close_timeout = std::chrono::seconds(1);
-constexpr duration handshake_timeout = std::chrono::seconds(1);
-constexpr duration send_timeout = std::chrono::seconds(1);
-constexpr duration response_timeout = std::chrono::seconds(1);
+constexpr duration close_timeout = std::chrono::seconds(2);
+constexpr duration handshake_timeout = std::chrono::seconds(2);
+constexpr duration send_timeout = std::chrono::seconds(2);
+constexpr duration response_timeout = std::chrono::seconds(2);
 
 } // namespace config
 } // namespace radrpc
