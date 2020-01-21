@@ -32,7 +32,7 @@
 namespace test {
 namespace core {
 
-const int defaults::wait_response_ms = 4000;
+const uint32_t defaults::wait_response_ms = 4000;
 
 #ifdef BUILD_VALGRIND
 

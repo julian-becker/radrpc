@@ -35,15 +35,15 @@ namespace core {
 
 using duration = std::chrono::steady_clock::duration;
 
-inline void sleep_ms(int ms)
+template <typename T> inline void sleep_ms(T ms)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-inline void sleep_ms_rnd(int min_ms, int max_ms)
+template <typename T> inline void sleep_ms_rnd(T min_ms, T max_ms)
 {
     std::this_thread::sleep_for(
-        std::chrono::milliseconds((int)thread_random::get(min_ms, max_ms)));
+        std::chrono::milliseconds(static_cast<int>(thread_random::get(min_ms, max_ms))));
 }
 
 } // namespace core

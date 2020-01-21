@@ -35,7 +35,7 @@ using namespace radrpc;
 class defaults
 {
   public:
-    static const int wait_response_ms;
+    static const uint32_t wait_response_ms;
 
     static const int sleep_low_delay_ms;
     static const int sleep_high_delay_ms;

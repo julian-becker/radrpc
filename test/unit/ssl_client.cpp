@@ -237,7 +237,7 @@ TEST_CASE("ssl client implementation")
             auto cl = create_ssl_client();
             REQUIRE(cl->connect());
             REQUIRE(
-                (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
         }
         srv->stop();
     }
@@ -247,7 +247,7 @@ TEST_CASE("ssl client implementation")
         TEST_DINFO("");
         auto cl = create_ssl_client();
         REQUIRE_FALSE(
-            (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+            static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
     }
 
     SECTION("send_recv fill queue & process")
@@ -285,7 +285,7 @@ TEST_CASE("ssl client implementation")
             cfg.send_attempt_delay = std::chrono::milliseconds(100);
             auto cl = create_ssl_client(cfg, default_client_timeout());
             REQUIRE(
-                (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
         }
         srv->stop();
     }
@@ -300,7 +300,7 @@ TEST_CASE("ssl client implementation")
             cfg.send_attempt_delay = std::chrono::milliseconds(100);
             auto cl = create_ssl_client(cfg, default_client_timeout());
             REQUIRE_FALSE(
-                (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
         }
         srv->stop();
     }
@@ -316,10 +316,10 @@ TEST_CASE("ssl client implementation")
             auto cl = create_ssl_client();
             std::vector<char> bytes(session_cfg.max_transfer_bytes, 0x0);
             REQUIRE(cl->connect());
-            REQUIRE((bool)cl->send_recv(UNIT_RPC_SEND_RECV, bytes));
+            REQUIRE(static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, bytes)));
             bytes.push_back(0x0);
             REQUIRE(cl->connect());
-            REQUIRE_FALSE((bool)cl->send_recv(UNIT_RPC_SEND_RECV, bytes));
+            REQUIRE_FALSE(static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, bytes)));
         }
         srv->stop();
     }
@@ -336,7 +336,7 @@ TEST_CASE("ssl client implementation")
             auto cl = create_ssl_client(default_client_config(), timeout);
             REQUIRE(cl->connect());
             REQUIRE_FALSE(
-                (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
         }
         srv->stop();
     }
@@ -351,10 +351,10 @@ TEST_CASE("ssl client implementation")
             auto cl = create_ssl_client();
             REQUIRE(cl->connect());
             REQUIRE_FALSE(
-                (bool)cl->send_recv(UNIT_RPC_SEND, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND, std::vector<char>())));
             REQUIRE(cl->connect());
             REQUIRE(
-                (bool)cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>()));
+                static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, std::vector<char>())));
         }
         srv->stop();
     }

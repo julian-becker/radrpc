@@ -69,7 +69,8 @@ void session_manager::broadcast(uint32_t call_id,
         {
             for (const auto &id : *session_ids)
             {
-                auto session_itr = m_plain_sessions.find(id);
+                auto session_itr =
+                    m_plain_sessions.find(static_cast<uint64_t>(id));
                 if (session_itr != m_plain_sessions.end())
                     plain_sessions_tmp.emplace(session_itr->first,
                                                session_itr->second);
@@ -95,7 +96,8 @@ void session_manager::broadcast(uint32_t call_id,
         {
             for (const auto &id : *session_ids)
             {
-                auto session_itr = m_ssl_sessions.find(id);
+                auto session_itr =
+                    m_ssl_sessions.find(static_cast<uint64_t>(id));
                 if (session_itr != m_ssl_sessions.end())
                     ssl_sessions_tmp.emplace(session_itr->first,
                                              session_itr->second);
@@ -194,7 +196,7 @@ void session_manager::remove_ssl_session(uint64_t id)
 void session_manager::broadcast(uint32_t call_id,
                                 const std::vector<char> &send_bytes)
 {
-    broadcast(call_id, send_bytes, (std::vector<char> *)nullptr);
+    broadcast(call_id, send_bytes, static_cast<std::vector<char> *>(nullptr));
 }
 
 template <typename StlContainer>

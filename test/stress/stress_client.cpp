@@ -96,9 +96,9 @@ void run_destruct(test_suite::client_set cl_set,
                   const client_timeout &cl_timeout,
                   bool connect_clients = false)
 {
-    for (std::size_t i = 0; i < cl_set.runtime_secs;)
+    for (uint32_t i = 0; i < cl_set.runtime_secs;)
     {
-        const int run_seconds = rnd(3, 7);
+        const uint32_t run_seconds = rnd(3u, 7u);
         auto cp = std::make_unique<test_suite::client_pool>(
             cl_set, srv_set, cl_cfg, cl_timeout);
         cp->set_wait_server();
@@ -119,7 +119,7 @@ void shutdown_server()
     auto timeout = default_client_timeout();
     client::plain cl(cfg, timeout);
     if (cl.connect(10, std::chrono::seconds(1)))
-        cl.send((int)rpc_command::shutdown, std::vector<char>());
+        cl.send(static_cast<uint32_t>(rpc_command::shutdown), std::vector<char>());
 }
 
 int main(int argc, char *argv[])

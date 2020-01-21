@@ -36,9 +36,9 @@ void test_data::get_random_data(uint32_t &offset,
                                 std::size_t &size) const
 {
     TEST_ASSERT(m_max_bytes > 0);
-    size = rnd(m_min_bytes, m_max_bytes);
-    offset = rnd(0, m_max_idx);
-    offset = std::min((uint32_t)(m_max_idx - size), offset);
+    size = static_cast<std::size_t>(rnd(m_min_bytes, m_max_bytes));
+    offset = static_cast<uint32_t>(rnd(0ul, m_max_idx));
+    offset = std::min(static_cast<uint32_t>(m_max_idx - size), offset);
     data = m_data_ptr + offset;
 }
 

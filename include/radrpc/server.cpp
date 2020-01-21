@@ -84,7 +84,7 @@ server::server(const server_config &p_server_cfg,
     m_server_timeout(p_server_timeout),
     m_session_cfg(p_session_cfg),
     m_manager(std::make_shared<impl::server::session_manager>(p_server_cfg)),
-    m_io_ctx(p_server_cfg.workers),
+    m_io_ctx(static_cast<int>(p_server_cfg.workers)),
     m_listener(std::make_shared<impl::server::listener>(
         m_io_ctx,
 #ifdef RADRPC_SSL_SUPPORT
@@ -120,7 +120,7 @@ server::server(const server_config &p_server_cfg,
     m_server_timeout(p_server_timeout),
     m_session_cfg(p_session_cfg),
     m_manager(std::make_shared<impl::server::session_manager>(p_server_cfg)),
-    m_io_ctx(p_server_cfg.workers),
+    m_io_ctx(static_cast<int>(p_server_cfg.workers)),
     m_listener(std::make_shared<impl::server::listener>(
         m_io_ctx,
         &m_ssl_ctx,

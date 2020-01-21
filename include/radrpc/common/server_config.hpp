@@ -77,7 +77,7 @@ inline std::ostream &operator<<(std::ostream &os, const server_config &o)
        << "workers: " << o.workers << std::endl
        << "max_sessions: " << o.max_sessions << std::endl
        << "max_handshake_bytes: " << o.max_handshake_bytes << std::endl
-       << "mode: " << (int)o.mode << std::endl;
+       << "mode: " << static_cast<uint32_t>(o.mode) << std::endl;
     return os;
 }
 

@@ -66,7 +66,7 @@ class broadcaster
         m_broadcast_run(false),
         m_srv(p_srv),
         m_data(p_data),
-        m_call_id((uint32_t)p_call_id),
+        m_call_id(static_cast<uint32_t>(p_call_id)),
         m_set({})
     {
     }

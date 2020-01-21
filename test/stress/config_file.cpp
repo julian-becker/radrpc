@@ -52,7 +52,7 @@ void config_file::load_config(const boost::filesystem::path &file)
         m_client_cfg.host_address = //
             get_field<std::string>(data, "client", "host_address");
         m_client_cfg.port = //
-            get_field<uint32_t>(data, "client", "port");
+            get_field<uint16_t>(data, "client", "port");
         m_client_cfg.max_read_bytes = //
             get_field<uint32_t>(data, "client", "max_read_bytes");
         m_client_cfg.send_attempts = //
@@ -64,7 +64,7 @@ void config_file::load_config(const boost::filesystem::path &file)
         m_server_cfg.host_address = //
             get_field<std::string>(data, "server", "host_address");
         m_server_cfg.port = //
-            get_field<uint32_t>(data, "server", "port");
+            get_field<uint16_t>(data, "server", "port");
         m_server_cfg.workers = //
             get_field<uint32_t>(data, "server", "workers");
         m_server_cfg.max_sessions = //

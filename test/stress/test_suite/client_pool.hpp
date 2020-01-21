@@ -105,7 +105,7 @@ class client_pool
      * @return true
      * @return false
      */
-    bool set_wait_server(int seconds = 0);
+    bool set_wait_server(uint32_t seconds = 0);
 
     /**
      * @brief
@@ -123,7 +123,7 @@ class client_pool
      * @brief
      *
      */
-    void wait(int seconds = 0);
+    void wait(uint32_t seconds = 0);
 
     /**
      * @brief
@@ -154,7 +154,7 @@ class client_pool
      */
     template <class Clients>
     bool execute_action(Clients &clients,
-                        int client_idx,
+                        std::size_t client_idx,
                         rpc_command action,
                         const std::vector<char> &data);
 };

@@ -51,7 +51,7 @@ template <typename T> class instance_track
     {
         while (m_run)
         {
-            if (m_instance_ptr == (void *)0x1)
+            if (m_instance_ptr == reinterpret_cast<void *>(0x1))
                 std::cout << " " << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }

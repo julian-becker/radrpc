@@ -47,7 +47,7 @@ void client_pool::listen_handler(receive_buffer &data)
     {
         TEST_THROW("Error: " << m_current_test_case << " listen_handler "
                            << data.size() << " / " << data
-                           << "\ndata_state:" << (int)ec);
+                           << "\ndata_state:" << static_cast<uint32_t>(ec));
         m_running = false;
     }
 };
@@ -98,7 +98,7 @@ client_pool::client_pool(const client_set &p_cl_set,
             m_cl_cfg, m_cl_timeout, std::move(ssl_ctx)));
         m_ssl_clients[i]->set_handshake_request(req);
         m_ssl_clients[i]->listen_broadcast(
-            (uint32_t)rpc_command::server_msg,
+            static_cast<uint32_t>(rpc_command::server_msg),
             std::bind(
                 &client_pool::listen_handler, this, std::placeholders::_1));
 
@@ -108,7 +108,7 @@ client_pool::client_pool(const client_set &p_cl_set,
             std::make_unique<client::plain>(m_cl_cfg, m_cl_timeout));
         m_plain_clients[i]->set_handshake_request(req);
         m_plain_clients[i]->listen_broadcast(
-            (uint32_t)rpc_command::server_msg,
+            static_cast<uint32_t>(rpc_command::server_msg),
             std::bind(
                 &client_pool::listen_handler, this, std::placeholders::_1));
     }
@@ -125,7 +125,7 @@ void client_pool::set_test_case(const std::string &name)
     m_current_test_case = name;
 }
 
-bool client_pool::set_wait_server(int seconds)
+bool client_pool::set_wait_server(uint32_t seconds)
 {
     if (seconds == 0)
         seconds = 5;
@@ -139,7 +139,7 @@ bool client_pool::set_wait_server(int seconds)
         auto net_srv_set = m_srv_set;
         net_srv_set.to_network();
         auto recv_bytes =
-            cl.send_recv((int)rpc_command::init, obj_to_bytes(net_srv_set));
+            cl.send_recv(static_cast<uint32_t>(rpc_command::init), obj_to_bytes(net_srv_set));
         return !recv_bytes.empty();
     }
     return false;
@@ -186,7 +186,7 @@ void client_pool::run()
     });
 }
 
-void client_pool::wait(int seconds)
+void client_pool::wait(uint32_t seconds)
 {
     if (seconds == 0)
         seconds = m_cl_set.runtime_secs;
@@ -202,8 +202,8 @@ void client_pool::stop()
 
 template <class Clients> bool client_pool::pulse(Clients &clients)
 {
-    int idx = rnd(0, m_cl_set.clients_per_mode - 1);
-    auto action = (rpc_command)rnd(0, (int)rpc_command::init - 1);
+    std::size_t idx = static_cast<std::size_t>(rnd(0u, m_cl_set.clients_per_mode - 1));
+    auto action = static_cast<rpc_command>(rnd(0u, static_cast<uint32_t>(rpc_command::init) - 1));
     const std::vector<char> rdata = m_test_data->get_random_data();
 
     if (!execute_action(clients, idx, action, rdata))
@@ -212,14 +212,14 @@ template <class Clients> bool client_pool::pulse(Clients &clients)
     if (rnd_bool(m_cl_set.disconnect_chance))
         clients[idx]->disconnect();
     if (rnd_bool(m_cl_set.restart_chance))
-        clients[idx]->send_recv((uint32_t)rpc_command::restart,
+        clients[idx]->send_recv(static_cast<uint32_t>(rpc_command::restart),
                                 std::vector<char>());
     return true;
 }
 
 template <class Clients>
 bool client_pool::execute_action(Clients &clients,
-                                 int client_idx,
+                                 std::size_t client_idx,
                                  rpc_command action,
                                  const std::vector<char> &data)
 {
@@ -227,19 +227,19 @@ bool client_pool::execute_action(Clients &clients,
     if (m_cl_set.random_send_timeout)
     {
         clients[client_idx]->set_send_timeout(
-            std::chrono::milliseconds(rnd(0, m_cl_set.timeout_ms)));
+            std::chrono::milliseconds(rnd(0u, m_cl_set.timeout_ms)));
         clients[client_idx]->set_response_timeout(
-            std::chrono::milliseconds(rnd(0, m_cl_set.timeout_ms)));
+            std::chrono::milliseconds(rnd(0u, m_cl_set.timeout_ms)));
     }
     // If flag not found, just skip it
-    if (!(m_cl_set.rpc_command_flags & (int)action))
+    if (!(m_cl_set.rpc_command_flags & static_cast<uint32_t>(action)))
         return true;
     switch (action)
     {
         case rpc_command::echo:
         {
             auto recv_bytes =
-                clients[client_idx]->send_recv((uint32_t)action, data);
+                clients[client_idx]->send_recv(static_cast<uint32_t>(action), data);
             if (recv_bytes.empty() &&                //
                 (m_srv_set.response_chance != 100 || //
                  m_srv_set.close_chance != 100 ||    //
@@ -262,7 +262,7 @@ bool client_pool::execute_action(Clients &clients,
         {
             auto data_size = data.size();
             auto recv_bytes =
-                clients[client_idx]->send_recv((uint32_t)action, data);
+                clients[client_idx]->send_recv(static_cast<uint32_t>(action), data);
             if (recv_bytes.empty() &&                //
                 (m_srv_set.response_chance != 100 || //
                  m_srv_set.close_chance != 100 ||    //
@@ -275,14 +275,14 @@ bool client_pool::execute_action(Clients &clients,
                 TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::send_recv "
                                    << recv_bytes.size() << " / " << data_size
-                                   << "\ndata_state:" << (int)ec);
+                                   << "\ndata_state:" << static_cast<uint32_t>(ec));
                 return false;
             }
             break;
         }
         case rpc_command::send:
         {
-            if (!clients[client_idx]->send((uint32_t)action, data) && //
+            if (!clients[client_idx]->send(static_cast<uint32_t>(action), data) && //
                 m_srv_set.close_chance == 0 &&                        //
                 m_cl_set.restart_chance == 0 &&                       //
                 !m_cl_set.random_send_timeout &&                      //
@@ -298,7 +298,7 @@ bool client_pool::execute_action(Clients &clients,
         {
             auto data_size = data.size();
             auto recv_bytes =
-                clients[client_idx]->send_recv((uint32_t)action, data);
+                clients[client_idx]->send_recv(static_cast<uint32_t>(action), data);
             if (recv_bytes.empty() &&                //
                 (m_srv_set.response_chance != 100 || //
                  m_srv_set.close_chance != 100 ||    //
@@ -312,7 +312,7 @@ bool client_pool::execute_action(Clients &clients,
                 TEST_THROW("Error: " << m_current_test_case
                                    << " rpc_command::send_broadcast "
                                    << recv_bytes.size() << " / " << data_size
-                                   << "\ndata_state:" << (int)ec);
+                                   << "\ndata_state:" << static_cast<uint32_t>(ec));
                 return false;
             }
             break;

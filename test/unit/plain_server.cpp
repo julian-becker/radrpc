@@ -187,7 +187,7 @@ TEST_CASE("plain server implementation")
         };
         auto cl = create_plain_client();
         auto clients = vector_of_object(cl);
-        for (auto i = 0; i < 3; ++i)
+        for (std::size_t i = 0; i < 3; ++i)
         {
             clients.emplace_back(create_plain_client());
             clients[i]->listen_broadcast(UNIT_RPC_SERVER_MSG, listen_handler);
@@ -224,7 +224,7 @@ TEST_CASE("plain server implementation")
         };
         auto cl = create_plain_client();
         auto clients = vector_of_object(cl);
-        for (auto i = 0; i < 3; ++i)
+        for (std::size_t i = 0; i < 3; ++i)
         {
             clients.emplace_back(create_plain_client());
             clients[i]->listen_broadcast(UNIT_RPC_SERVER_MSG, listen_handler);
@@ -419,9 +419,9 @@ TEST_CASE("plain server implementation")
             auto cl = create_plain_client();
             std::vector<char> bytes(session_cfg.max_transfer_bytes, 0x0);
             REQUIRE(cl->connect());
-            REQUIRE((bool)cl->send_recv(UNIT_RPC_SEND_RECV, bytes));
+            REQUIRE(static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, bytes)));
             bytes.push_back(0x0);
-            REQUIRE_FALSE((bool)cl->send_recv(UNIT_RPC_SEND_RECV, bytes));
+            REQUIRE_FALSE(static_cast<bool>(cl->send_recv(UNIT_RPC_SEND_RECV, bytes)));
         }
         srv->stop();
     }

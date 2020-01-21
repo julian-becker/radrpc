@@ -63,7 +63,7 @@ inline server_set::server_set() :
     max_delay_ms(50),
     broadcast_delay_ms(1000),
     min_send_bytes(1),
-    max_send_bytes(0xFF)
+    max_send_bytes(100000)
 {
 }
 

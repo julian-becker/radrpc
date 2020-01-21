@@ -57,7 +57,7 @@ int main()
     // Still i would like to soothe sanitizer,
     // so atomic variables will be used for this case.
     std::atomic<bool> send_broadcast = ATOMIC_VAR_INIT(false);
-    std::atomic<int> connect_chance = ATOMIC_VAR_INIT(0);
+    std::atomic<uint32_t> connect_chance = ATOMIC_VAR_INIT(0);
 
 
     // Set control server
@@ -68,7 +68,7 @@ int main()
     auto ctrl_timeout = default_server_timeout();
     auto ctrl_session_cfg = default_session_config();
     server control_server(ctrl_cfg, ctrl_timeout, ctrl_session_cfg);
-    control_server.bind((uint32_t)rpc_command::init, [&](session_context *ctx) {
+    control_server.bind(static_cast<uint32_t>(rpc_command::init), [&](session_context *ctx) {
         if (ctx->size() == sizeof(test_suite::server_set))
         {
             // Copy message
@@ -117,7 +117,7 @@ int main()
 
 
     // Start control server
-    control_server.bind((uint32_t)rpc_command::shutdown, [&](session_context *ctx) { srv.stop(); });
+    control_server.bind(static_cast<uint32_t>(rpc_command::shutdown), [&](session_context *ctx) { srv.stop(); });
     control_server.async_start();
 
 
@@ -130,10 +130,10 @@ int main()
             if (send_broadcast)
             {
                 if (rnd_bool(50))
-                    srv.broadcast((uint32_t)rpc_command::server_msg,
+                    srv.broadcast(static_cast<uint32_t>(rpc_command::server_msg),
                                   data->get_random_data());
                 else
-                    srv.broadcast((uint32_t)rpc_command::server_msg,
+                    srv.broadcast(static_cast<uint32_t>(rpc_command::server_msg),
                                   data->get_random_data(),
                                   std::unordered_set<uint64_t>{info.id});
             }
@@ -149,7 +149,7 @@ int main()
     });
 
     srv.bind_listen([&](const std::string &ip) {
-        return rnd_bool(connect_chance);
+        return rnd_bool(static_cast<uint32_t>(connect_chance));
     });
 
     srv.bind_disconnect([&](const session_info &info) {
@@ -161,16 +161,16 @@ int main()
         }
     });
 
-    srv.bind((uint32_t)rpc_command::restart, [&](session_context *ctx) {
+    srv.bind(static_cast<uint32_t>(rpc_command::restart), [&](session_context *ctx) {
         restart_server = true;
         srv.stop();
     });
 
-    srv.bind((uint32_t)rpc_command::echo, [&](session_context *ctx) {
+    srv.bind(static_cast<uint32_t>(rpc_command::echo), [&](session_context *ctx) {
         auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            TEST_INFO("STRESS_RPC_ECHO: invalid " << (int)ec);
+            TEST_INFO("STRESS_RPC_ECHO: invalid " << static_cast<uint32_t>(ec));
             stop_server();
             return;
         }
@@ -182,11 +182,11 @@ int main()
             ctx->close();
     });
 
-    srv.bind((uint32_t)rpc_command::send, [&](session_context *ctx) {
+    srv.bind(static_cast<uint32_t>(rpc_command::send), [&](session_context *ctx) {
         auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            TEST_INFO("rpc_command::send: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send: invalid " << static_cast<uint32_t>(ec));
             stop_server();
             return;
         }
@@ -195,11 +195,11 @@ int main()
             ctx->close();
     });
 
-    srv.bind((uint32_t)rpc_command::send_recv, [&](session_context *ctx) {
+    srv.bind(static_cast<uint32_t>(rpc_command::send_recv), [&](session_context *ctx) {
         auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            TEST_INFO("rpc_command::send_recv: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send_recv: invalid " << static_cast<uint32_t>(ec));
             stop_server();
             return;
         }
@@ -211,11 +211,11 @@ int main()
     });
 
     // A bit heavy for the server to handle with many clients
-    srv.bind((uint32_t)rpc_command::send_broadcast, [&](session_context *ctx) {
+    srv.bind(static_cast<uint32_t>(rpc_command::send_broadcast), [&](session_context *ctx) {
         auto ec = data->data_valid(ctx->data(), ctx->size());
         if (ec != data_state::valid)
         {
-            TEST_INFO("rpc_command::send_broadcast: invalid " << (int)ec);
+            TEST_INFO("rpc_command::send_broadcast: invalid " << static_cast<uint32_t>(ec));
             stop_server();
             return;
         }
@@ -223,10 +223,10 @@ int main()
         if (send_broadcast)
         {
             if (rnd_bool(50))
-                srv.broadcast((uint32_t)rpc_command::server_msg,
+                srv.broadcast(static_cast<uint32_t>(rpc_command::server_msg),
                               data->get_random_data());
             else
-                srv.broadcast((uint32_t)rpc_command::server_msg,
+                srv.broadcast(static_cast<uint32_t>(rpc_command::server_msg),
                               data->get_random_data(),
                               std::unordered_set<uint64_t>{ctx->id});
         }

@@ -172,7 +172,7 @@ class server
 
     /**
      * Stops the server.
-     * If executed in one of the bound handlers(in executor itself)
+     * If executed in one of the bound handlers (in executor itself)
      * it will just stop the io context, otherwise it will stop the io,
      * wait for and join the workers.
      * [thread-safe]

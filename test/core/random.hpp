@@ -32,9 +32,11 @@ namespace core {
 
 using thread_random = effolkronium::random_thread_local;
 
-inline int rnd(int min, int max) { return thread_random::get(min, max); }
+template <typename T>
+inline T rnd(T min, T max) { return thread_random::get(min, max); }
 
-inline bool rnd_bool(int true_chance_percent)
+template <typename T>
+inline bool rnd_bool(T true_chance_percent)
 {
     if (true_chance_percent == 0)
         return false;

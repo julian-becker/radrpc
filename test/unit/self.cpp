@@ -110,8 +110,8 @@ TEST_CASE("test_data")
             // size = rnd(m_min_bytes, m_max_bytes);
             size = test_data::max_data_size - 1;
             // offset = rnd(0, m_max_idx);
-            offset = tdata->m_max_idx;
-            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            offset = static_cast<uint32_t>(tdata->m_max_idx);
+            offset = std::min(static_cast<uint32_t>(tdata->m_max_idx - size), offset);
             ptr = tdata->m_data_ptr + offset;
         }
         REQUIRE(offset + size <= tdata->m_max_idx);
@@ -133,7 +133,8 @@ TEST_CASE("test_data")
             size = 1;
             // offset = rnd(0, m_max_idx);
             offset = 0;
-            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            offset = std::min(static_cast<uint32_t>(tdata->m_max_idx - size),
+                              offset);
             ptr = tdata->m_data_ptr + offset;
         }
         REQUIRE(offset + size <= tdata->m_max_idx);
@@ -155,7 +156,8 @@ TEST_CASE("test_data")
             size = test_data::max_data_size - 1;
             // offset = rnd(0, m_max_idx);
             offset = 0;
-            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            offset = std::min(static_cast<uint32_t>(tdata->m_max_idx - size),
+                              offset);
             ptr = tdata->m_data_ptr + offset;
         }
         REQUIRE(offset + size <= tdata->m_max_idx);
@@ -176,8 +178,9 @@ TEST_CASE("test_data")
             // size = rnd(m_min_bytes, m_max_bytes);
             size = 1;
             // offset = rnd(0, m_max_idx);
-            offset = tdata->m_max_idx;
-            offset = std::min((uint32_t)(tdata->m_max_idx - size), offset);
+            offset = static_cast<uint32_t>(tdata->m_max_idx);
+            offset = std::min(static_cast<uint32_t>(tdata->m_max_idx - size),
+                              offset);
             ptr = tdata->m_data_ptr + offset;
         }
         REQUIRE(offset + size <= tdata->m_max_idx);

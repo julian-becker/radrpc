@@ -75,7 +75,7 @@ bool data_compare(const char *lhs_data,
 struct endianness_test_data
 {
     static constexpr uint32_t sample4_bytes = 0x01020304;
-    static constexpr uint8_t sample1st_byte = (const uint8_t &)sample4_bytes;
+    static constexpr uint8_t sample1st_byte = static_cast<const uint8_t&>(sample4_bytes);
 };
 
 static_assert(endianness_test_data::sample1st_byte == 0x04 ||
