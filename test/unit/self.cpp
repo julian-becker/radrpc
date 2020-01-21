@@ -30,6 +30,7 @@
 #include <thread>
 #include <vector>
 
+#define CATCH_CONFIG_CONSOLE_WIDTH 300
 #include "catch.hpp"
 
 #include <test/core/log.hpp>

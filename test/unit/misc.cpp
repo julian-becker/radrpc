@@ -31,6 +31,7 @@
 #include <radrpc/core/timeout.hpp>
 #include <radrpc/core/data/cache.hpp>
 
+#define CATCH_CONFIG_CONSOLE_WIDTH 300
 #include "catch.hpp"
 
 #include <test/core/defaults.hpp>

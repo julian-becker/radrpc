@@ -28,6 +28,7 @@
 #include <radrpc/impl/client/connector.hpp>
 #include "radrpc/common/connection_state.hpp"
 
+#define CATCH_CONFIG_CONSOLE_WIDTH 300
 #include "catch.hpp"
 
 #include <test/core/defaults.hpp>

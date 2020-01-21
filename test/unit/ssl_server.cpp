@@ -23,12 +23,14 @@
  */
 
 #ifdef RADRPC_SSL_SUPPORT
+#include <atomic>
 #include <csignal>
 
 #include <radrpc/client.hpp>
 #include <radrpc/impl/client/connector.hpp>
 #include "radrpc/common/connection_state.hpp"
 
+#define CATCH_CONFIG_CONSOLE_WIDTH 300
 #include "catch.hpp"
 
 #include <test/core/bytes.hpp>
@@ -281,7 +283,7 @@ TEST_CASE("ssl server implementation")
     {
         TEST_DINFO("");
         auto srv = create_ssl_server();
-        auto disconnected = false;
+        std::atomic<bool> disconnected = ATOMIC_VAR_INIT(false);
         REQUIRE(srv->bind_disconnect(
             [&](const radrpc::session_info &info) { disconnected = true; }));
         srv->async_start();
@@ -296,7 +298,7 @@ TEST_CASE("ssl server implementation")
     {
         TEST_DINFO("");
         auto srv = create_ssl_server();
-        auto is_ok = false;
+        std::atomic<bool> is_ok = ATOMIC_VAR_INIT(false);
         REQUIRE(srv->bind_accept([&](radrpc::session_info &info) {
             if (info.id != 0 && info.remote_host == "127.0.0.1")
                 is_ok = true;
@@ -358,7 +360,7 @@ TEST_CASE("ssl server implementation")
     {
         TEST_DINFO("");
         auto srv = create_ssl_server();
-        auto rejected = false;
+        std::atomic<bool> rejected = ATOMIC_VAR_INIT(false);
         REQUIRE(srv->bind_accept([&](const radrpc::session_info &info) {
             rejected = true;
             return false;
@@ -375,7 +377,7 @@ TEST_CASE("ssl server implementation")
     {
         TEST_DINFO("");
         auto srv = create_ssl_server();
-        auto rejected = false;
+        std::atomic<bool> rejected = ATOMIC_VAR_INIT(false);
         REQUIRE(srv->bind_listen([&](const std::string &ip) {
             rejected = true;
             return false;
