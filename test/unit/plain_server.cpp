@@ -255,6 +255,43 @@ TEST_CASE("plain server implementation")
         srv->stop();
     }
 
+    SECTION("bind max call_id")
+    {
+        TEST_DINFO("");
+        auto srv = create_plain_server();
+        REQUIRE_FALSE(srv->bind(config::max_call_id + 1,
+                                [&](radrpc::session_context *ctx) {}));
+        REQUIRE_FALSE(srv->bind(config::max_call_id,
+                                [&](radrpc::session_context *ctx) {}));
+        REQUIRE(srv->bind(config::max_call_id - 1,
+                          [&](radrpc::session_context *ctx) {}));
+        srv->stop();
+    }
+
+    SECTION("client call max call_id")
+    {
+        TEST_DINFO("");
+        auto srv = create_plain_server();
+        REQUIRE(srv->bind(config::max_call_id - 1,
+                          [&](radrpc::session_context *ctx) {
+                              ctx->response.push_back(0x0);
+                          }));
+        auto cl = create_plain_client();
+        srv->async_start();
+        sleep_ms(defaults::sleep_high_delay_ms);
+
+        REQUIRE(cl->connect());
+        REQUIRE_FALSE(
+            cl->send_recv(config::max_call_id - 1, std::vector<char>()) //
+                .empty());
+        REQUIRE(cl->send_recv(config::max_call_id, std::vector<char>()) //
+                    .empty());
+        REQUIRE(cl->send_recv(config::max_call_id + 1, std::vector<char>()) //
+                    .empty());
+
+        srv->stop();
+    }
+
     SECTION("bind while running")
     {
         TEST_DINFO("");

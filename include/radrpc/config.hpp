@@ -48,6 +48,8 @@ using time_point = std::chrono::steady_clock::time_point;
 
 namespace config {
 
+constexpr uint32_t max_call_id = 1024;
+
 constexpr int64_t deadlock_secs = 30;
 constexpr int64_t io_timeout_secs = 5;
 

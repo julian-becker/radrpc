@@ -117,8 +117,7 @@ class session_manager : public std::enable_shared_from_this<session_manager>
     const server_config server_cfg;
 
     /// The bound handlers.
-    std::unordered_map<uint32_t, std::function<void(session_context *)>>
-        bound_funcs;
+    std::function<void(session_context *)> bound_funcs[config::max_call_id];
 
     /// The bound accept handler.
     std::function<bool(session_info &)> on_accept;

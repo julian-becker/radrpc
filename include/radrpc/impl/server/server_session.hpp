@@ -104,44 +104,46 @@ template <class Derived> class server_session : private session_context
             m_header.result_id = ntohl_uint64(m_header.result_id);
 
             uint32_t call_id = m_header.call_id;
-            auto func_itr = m_manager->bound_funcs.find(call_id);
             m_receive_buffer.consume(sizeof(io_header));
             m_receive_buffer_ref =
                 boost::beast::buffers_front(m_receive_buffer.data());
-            if (func_itr != m_manager->bound_funcs.end())
-            {
-                if (func_itr->second)
-                {
-                    // Call bound function
-                    func_itr->second(this);
-                    // Check if bound function requests to close
-                    if (m_bound_close)
-                    {
-                        RADRPC_LOG("server_session::call_function: Bound "
-                                   "function close request");
-                        derived().close_session(true);
-                        return;
-                    }
-                    // Check if bound function has added bytes to send back to
-                    // client
-                    if (!response.empty())
-                    {
-                        // Convert to network byte order (big endian)
-                        m_header.call_id = htonl(m_header.call_id);
-                        m_header.result_id = htonl_uint64(m_header.result_id);
 
-                        const auto push =
-                            new data::push(m_header, std::move(response));
-                        // Don't need to clear, since it will be reassigned after
-                        // call in 'on_read'
-                        handle_send(std::shared_ptr<const data::push>(push));
-                    }
-                }
+            if (call_id >= config::max_call_id)
+            {
+                RADRPC_LOG("server_session::call_function: Call id "
+                           << call_id << " is out of bounds");
             }
-            else
+            else if (m_manager->bound_funcs[call_id] == nullptr)
             {
                 RADRPC_LOG("server_session::call_function: Call id "
                            << call_id << " was not bound to any function");
+            }
+            else
+            {
+                // Call bound function
+                m_manager->bound_funcs[call_id](this);
+                // Check if bound function requests to close
+                if (m_bound_close)
+                {
+                    RADRPC_LOG("server_session::call_function: Bound "
+                                "function close request");
+                    derived().close_session(true);
+                    return;
+                }
+                // Check if bound function has added bytes to send back to
+                // client
+                if (!response.empty())
+                {
+                    // Convert to network byte order (big endian)
+                    m_header.call_id = htonl(m_header.call_id);
+                    m_header.result_id = htonl_uint64(m_header.result_id);
+
+                    const auto push =
+                        new data::push(m_header, std::move(response));
+                    // Don't need to clear, since it will be reassigned after
+                    // call in 'on_read'
+                    handle_send(std::shared_ptr<const data::push>(push));
+                }
             }
         }
         else

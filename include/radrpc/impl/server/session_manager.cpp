@@ -125,6 +125,7 @@ session_manager::session_manager(server_config p_server_cfg) :
     m_sub_refs(0),
     m_msg_queued(0),
     server_cfg(std::move(p_server_cfg)),
+    bound_funcs{},
     on_accept(nullptr),
     on_listen(nullptr),
     on_disconnect(nullptr)

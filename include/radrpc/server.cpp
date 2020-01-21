@@ -243,10 +243,9 @@ bool server::bind(uint32_t bind_id,
                   std::function<void(session_context *)> handler)
 {
     std::unique_lock<std::mutex> lock(m_mtx);
-    if (m_running || m_manager->connections() != 0)
+    if (m_running || m_manager->connections() != 0 || bind_id >= config::max_call_id)
         return false;
-    auto func_itr = m_manager->bound_funcs.find(bind_id);
-    if (func_itr != m_manager->bound_funcs.end())
+    if (m_manager->bound_funcs[bind_id])
         RADRPC_THROW("server::bind: The given id '" + std::to_string(bind_id) +
                      "' was already bound to a function.");
     m_manager->bound_funcs[bind_id] = std::move(handler);
