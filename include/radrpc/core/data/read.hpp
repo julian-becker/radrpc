@@ -54,7 +54,7 @@ class read : public std::enable_shared_from_this<read>
     int64_t valid_ms;
 
     /// The state of the data.
-    state state;
+    data::state state;
 
     /// The data buffer.
     boost::beast::flat_buffer read_buffer;
@@ -73,7 +73,7 @@ class read : public std::enable_shared_from_this<read>
         timestamp(p_timestamp),
         valid_ms(std::chrono::duration_cast<std::chrono::milliseconds>(p_valid)
                      .count()),
-        state(state::queued)
+        state(data::state::queued)
     {
     }
 

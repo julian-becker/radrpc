@@ -28,11 +28,11 @@
 #include <boost/beast/websocket/stream_base.hpp>
 
 #include <radrpc/common/session_config.hpp>
+#include <radrpc/common/streams.hpp>
 
 namespace radrpc {
 namespace common {
 
-namespace websocket = boost::beast::websocket;
 typedef websocket::request_type handshake_request;
 typedef websocket::response_type handshake_response;
 
