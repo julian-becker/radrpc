@@ -20,11 +20,13 @@ set_definitions(radrpc_obj "")
 
 # Build static library
 add_library(radrpc_static STATIC $<TARGET_OBJECTS:radrpc_obj>)
+target_link_libraries(radrpc_static ${LINK_LIBRARIES})
 set_target_properties(radrpc_static PROPERTIES OUTPUT_NAME "radrpc")
 
 # Build shared library
 if (BUILD_SHARED OR BUILD_INTERNAL_SHARED)
     add_library(radrpc_shared SHARED $<TARGET_OBJECTS:radrpc_obj>)
+    target_link_libraries(radrpc_shared ${LINK_LIBRARIES})
     set_target_properties(radrpc_shared PROPERTIES OUTPUT_NAME "radrpc")
 endif()
 
