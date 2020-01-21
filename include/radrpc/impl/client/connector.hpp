@@ -73,6 +73,9 @@ class connector : public session<connector<StreamType>>,
     /// Used to check if close initiated external.
     bool m_close_initiated;
 
+    /// Used to check if closed.
+    bool m_closed;
+
     friend class session<connector<StreamType>>;
 
     session<connector<StreamType>> &base()
@@ -211,12 +214,51 @@ class connector : public session<connector<StreamType>>,
         if (base().m_close || base().m_close_received)
             return;
         base().m_close = true;
+        do_close();
+    }
+
+    /**
+     * Closes the session.
+     */
+    template <typename F = StreamType>
+    typename std::enable_if<std::is_same<F, streams::plain>::value, void>::type
+    do_close()
+    {
+        // Timeout doesn't seem to work correctly with plain streams
+        // and results in stucked session.
+        // Maybe there's something internal that doesn't
+        // cancel the operation via a timer or doing an invalid operation
+        // here despite the carefully handling of the close procedure
+        // (no other async operations, just read).
+        // Todo: This may needs further investigation
+        boost::beast::error_code ec;
+        // Cancel pending async operations
+        m_stream.next_layer().cancel();
+        // Disable sending / receiving
+        m_stream.next_layer().socket().shutdown(
+            boost::asio::ip::tcp::socket::shutdown_both, ec);
+        // Close socket
+        m_stream.next_layer().socket().close(ec);
+        m_closed = true;
+    }
+
+#ifdef RADRPC_SSL_SUPPORT
+    /**
+     * Closes the session by 'async_close()'.
+     * This works by sending a close frame, waiting
+     * for a timeout (option was set) & close itself.
+     */
+    template <typename F = StreamType>
+    typename std::enable_if<std::is_same<F, streams::ssl>::value, void>::type
+    do_close()
+    {
         // Timeout is handled by 'm_timeout'
         m_stream.async_close(
             websocket::close_code::normal,
             boost::beast::bind_front_handler(&connector::on_close,
                                              this->shared_from_this()));
     }
+#endif
 
     /**
      * @param ec
@@ -225,6 +267,7 @@ class connector : public session<connector<StreamType>>,
     {
         if (ec)
             RADRPC_LOG("client::connector::on_close: " << ec.message());
+        m_closed = true;
     }
 
   public:
@@ -261,7 +304,8 @@ class connector : public session<connector<StreamType>>,
         m_resolver(p_io_ctx),
         m_stream(p_io_ctx),
         m_state(connection_state::none),
-        m_close_initiated(false)
+        m_close_initiated(false),
+        m_closed(false)
     {
         RADRPC_LOG("+client::connector: plain");
     }
@@ -299,7 +343,8 @@ class connector : public session<connector<StreamType>>,
         m_resolver(p_io_ctx),
         m_stream(p_io_ctx, p_ssl_ctx),
         m_state(connection_state::none),
-        m_close_initiated(false)
+        m_close_initiated(false),
+        m_closed(false)
     {
         RADRPC_LOG("+client::connector: ssl");
     }
