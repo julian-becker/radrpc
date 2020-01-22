@@ -384,15 +384,12 @@ class connector : public session<connector<StreamType>>,
                 m_io_ctx->restart();
             try
             {
-                boost::system::error_code ec;
-                m_io_ctx->run(ec);
-                if (ec)
-                    RADRPC_LOG("client::connector::run: " << ec);
+                m_io_ctx->run();
+                RADRPC_LOG("client::connector::run: IO done");
             }
             catch (std::exception &ex)
             {
-                RADRPC_LOG("client::connector::run: " << ec
-                                                      << "\nEX: " << ex.what());
+                RADRPC_LOG("client::connector::run: EX: " << ex.what());
                 RADRPC_DEBUG_LOOP();
             }
             catch (...)

@@ -50,15 +50,13 @@ void server::run_async_workers(const std::function<void()> &io_stopped_handler)
 
             try
             {
-                boost::system::error_code ec;
-                m_io_ctx.run(ec);
+                m_io_ctx.run();
                 RADRPC_LOG("server::run_async_workers: Worker "
-                           << i << " done: " << ec);
+                           << i << " done");
             }
             catch (std::exception &ex)
             {
-                RADRPC_LOG("server::run_async_workers: " << ec << "\nEX: "
-                                                              << ex.what());
+                RADRPC_LOG("server::run_async_workers: EX: " << ex.what());
                 RADRPC_DEBUG_LOOP();
             }
             catch (...)
@@ -66,7 +64,7 @@ void server::run_async_workers(const std::function<void()> &io_stopped_handler)
                 RADRPC_DEBUG_LOOP();
             }
 
-            bool notify;
+            bool notify = false;
             {
                 std::unique_lock<std::mutex> worker_lock(m_stop_mtx);
                 notify = ++m_workers_done == workers;
