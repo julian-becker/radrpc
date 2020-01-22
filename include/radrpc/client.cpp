@@ -188,6 +188,7 @@ client::base::base(client_config p_client_cfg,
     m_is_ssl(true),
     m_ssl_ctx(std::move(p_ssl_ctx)),
     m_expired(true),
+    m_bound_funcs{},
     m_io_ctx(new boost::asio::io_context()),
     m_client_cfg(std::move(p_client_cfg)),
     m_client_timeout(p_client_timeout),
@@ -205,17 +206,17 @@ bool client::base::listen_broadcast(
     uint32_t broadcast_id,
     std::function<void(receive_buffer &)> handler)
 {
+    if (broadcast_id >= config::max_call_id)
+        return false;
     std::lock_guard<std::shared_timed_mutex> write_lock(m_session_mtx);
     std::unique_lock<std::mutex> lock(m_expired_mtx);
     if (!m_expired)
         RADRPC_THROW("client::listen_broadcast: Cannot assign listen "
                      "handler while "
                      "session is connected, disconnect at first.");
-    auto func_itr = m_bound_funcs.find(broadcast_id);
-    if (func_itr != m_bound_funcs.end())
-        RADRPC_THROW("client::listen_broadcast: The given id '" +
-                     std::to_string(broadcast_id) +
-                     "' was already bound to a function.");
+    if (m_bound_funcs[broadcast_id])
+        RADRPC_THROW("client::listen_broadcast: The given id '"
+                     << broadcast_id << "' was already bound to a function.");
     m_bound_funcs[broadcast_id] = std::move(handler);
     return true;
 }

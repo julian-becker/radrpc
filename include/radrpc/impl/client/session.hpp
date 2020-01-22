@@ -256,17 +256,29 @@ template <class Derived> class session
             header.call_id = ntohl(header.call_id);
             header.result_id = ntohl_uint64(header.result_id);
 
-            auto func_itr = derived().m_bound_funcs->find(header.call_id);
-            if (func_itr != derived().m_bound_funcs->end())
+            // Swap if not broadcast packet
+            if (header.result_id != 0)
             {
-                // Call broadcast handler
-                if (func_itr->second)
-                    func_itr->second(
-                        *(reinterpret_cast<receive_buffer *>(&m_read_buffer)));
+                m_cache.swap_notify(header.result_id, m_read_buffer);
+            }
+            // Check bounds before calling broadcast
+            else if (header.call_id >= config::max_call_id)
+            {
+                RADRPC_LOG("client::session::on_read: Call id "
+                           << header.call_id << " is out of bounds");
+            }
+            // Check if function was bound
+            else if (derived().m_bound_funcs[header.call_id] == nullptr)
+            {
+                RADRPC_LOG("client::session::on_read: Call id "
+                           << header.call_id
+                           << " was not bound to any function");
             }
             else
             {
-                m_cache.swap_notify(header.result_id, m_read_buffer);
+                // Call broadcast handler
+                derived().m_bound_funcs[header.call_id](
+                    *(reinterpret_cast<receive_buffer *>(&m_read_buffer)));
             }
         }
         else

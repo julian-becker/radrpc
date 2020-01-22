@@ -402,6 +402,50 @@ TEST_CASE("plain client implementation")
         }
         REQUIRE_FALSE(cl->ping());
     }
+
+    ////////////////////////////////////////////////////////
+    // listen_broadcast()
+    ////////////////////////////////////////////////////////
+
+    SECTION("bind max call_id")
+    {
+        TEST_DINFO("");
+        auto cl = create_plain_client();
+        REQUIRE_FALSE(cl->listen_broadcast(config::max_call_id + 1,
+                                           [&](receive_buffer &p_data) {}));
+        REQUIRE_FALSE(cl->listen_broadcast(config::max_call_id,
+                                           [&](receive_buffer &p_data) {}));
+        REQUIRE(cl->listen_broadcast(config::max_call_id - 1,
+                                           [&](receive_buffer &p_data) {}));
+    }
+
+    SECTION("listen broadcast min max call_id")
+    {
+        TEST_DINFO("");
+        auto cl = create_plain_client();
+        std::vector<char> bytes(1, 0x0);
+        std::atomic<int> received = ATOMIC_VAR_INIT(0);
+        REQUIRE(cl->listen_broadcast(config::max_call_id - 1,
+                                     [&](receive_buffer &p_data) {
+                                         received++;
+                                     }));
+        auto srv = create_plain_server();
+        srv->async_start();
+        sleep_ms(defaults::sleep_high_delay_ms);
+        REQUIRE(cl->connect());
+        srv->broadcast(config::max_call_id - 1, bytes);
+        srv->broadcast(0, bytes);
+        sleep_ms(defaults::sleep_high_delay_ms);
+        REQUIRE(received == 1);
+        cl->disconnect();
+        REQUIRE(cl->listen_broadcast(
+            0, [&](receive_buffer &p_data) { received++; }));
+        REQUIRE(cl->connect());
+        srv->broadcast(config::max_call_id - 1, bytes);
+        srv->broadcast(0, bytes);
+        sleep_ms(defaults::sleep_high_delay_ms);
+        REQUIRE(received == 3);
+    }
 }
 
 TEST_CASE("plain client connect")
@@ -423,8 +467,10 @@ TEST_CASE("plain client connect")
         timeout.idle_timeout = duration::max();
         timeout.keep_alive_pings = false;
         auto cfg = default_client_config();
-        std::unordered_map<uint32_t, std::function<void(receive_buffer &)>>
-            bound_funcs;
+        std::function<void(receive_buffer &)>
+            bound_funcs[config::max_call_id]{};
+
+            
         auto ptr = std::make_shared<
             radrpc::impl::client::connector<streams::plain>>(
             io_ctx,

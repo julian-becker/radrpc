@@ -55,8 +55,8 @@ class connector : public session<connector<StreamType>>,
     handshake_request *m_req_handshake;
 
     /// Bound handlers to call on broadcast by id.
-    std::unordered_map<uint32_t, std::function<void(receive_buffer &)>>
-        *m_bound_funcs;
+    /// sizeof config::max_call_id
+    std::function<void(receive_buffer &)> *m_bound_funcs;
 
     /// No Strand ("io_context" single threaded)
     tcp::resolver m_resolver;
@@ -291,8 +291,8 @@ class connector : public session<connector<StreamType>>,
         client_timeout &p_client_timeout,
         websocket::stream_base::timeout &p_timeout,
         handshake_request &p_req_handshake,
-        std::unordered_map<uint32_t, std::function<void(receive_buffer &)>>
-            &p_bound_funcs,
+        std::function<void(receive_buffer &)>
+            p_bound_funcs[config::max_call_id],
         typename std::enable_if<std::is_same<F, streams::plain>::value> * =
             nullptr) :
         session<connector>(p_client_cfg, p_client_timeout),
@@ -300,7 +300,7 @@ class connector : public session<connector<StreamType>>,
         m_thread(&p_thread),
         m_timeout(&p_timeout),
         m_req_handshake(&p_req_handshake),
-        m_bound_funcs(&p_bound_funcs),
+        m_bound_funcs(p_bound_funcs),
         m_resolver(p_io_ctx),
         m_stream(p_io_ctx),
         m_state(connection_state::none),
@@ -330,8 +330,8 @@ class connector : public session<connector<StreamType>>,
         client_timeout &p_client_timeout,
         websocket::stream_base::timeout &p_timeout,
         handshake_request &p_req_handshake,
-        std::unordered_map<uint32_t, std::function<void(receive_buffer &)>>
-            &p_bound_funcs,
+        std::function<void(receive_buffer &)>
+            p_bound_funcs[config::max_call_id],
         typename std::enable_if<std::is_same<F, streams::ssl>::value> * =
             nullptr) :
         session<connector>(p_client_cfg, p_client_timeout),
@@ -339,7 +339,7 @@ class connector : public session<connector<StreamType>>,
         m_thread(&p_thread),
         m_timeout(&p_timeout),
         m_req_handshake(&p_req_handshake),
-        m_bound_funcs(&p_bound_funcs),
+        m_bound_funcs(p_bound_funcs),
         m_resolver(p_io_ctx),
         m_stream(p_io_ctx, p_ssl_ctx),
         m_state(connection_state::none),

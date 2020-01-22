@@ -92,8 +92,8 @@ class client
         bool m_expired;
 
         /// The bound broadcast handlers.
-        std::unordered_map<uint32_t, std::function<void(receive_buffer &)>>
-            m_bound_funcs;
+        std::function<void(receive_buffer &)>
+            m_bound_funcs[config::max_call_id];
 
         /// Lock to operate on session.
         std::shared_timed_mutex m_session_mtx;
