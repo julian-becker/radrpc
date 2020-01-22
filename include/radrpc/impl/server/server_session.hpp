@@ -96,32 +96,33 @@ template <class Derived> class server_session : private session_context
             boost::beast::buffers_front(m_receive_buffer.data());
         if (m_receive_buffer_ref.size() >= sizeof(io_header))
         {
+            // Copy header & clear its portion
             m_header = *reinterpret_cast<const io_header *>(
                 m_receive_buffer_ref.data());
+            m_receive_buffer.consume(sizeof(io_header));
 
             // Convert to host byte order
             m_header.call_id = ntohl(m_header.call_id);
             m_header.result_id = ntohl_uint64(m_header.result_id);
 
-            uint32_t call_id = m_header.call_id;
-            m_receive_buffer.consume(sizeof(io_header));
             m_receive_buffer_ref =
                 boost::beast::buffers_front(m_receive_buffer.data());
 
-            if (call_id >= config::max_call_id)
+            if (m_header.call_id >= config::max_call_id)
             {
                 RADRPC_LOG("server_session::call_function: Call id "
-                           << call_id << " is out of bounds");
+                           << m_header.call_id << " is out of bounds");
             }
-            else if (m_manager->bound_funcs[call_id] == nullptr)
+            else if (m_manager->bound_funcs[m_header.call_id] == nullptr)
             {
                 RADRPC_LOG("server_session::call_function: Call id "
-                           << call_id << " was not bound to any function");
+                           << m_header.call_id
+                           << " was not bound to any function");
             }
             else
             {
                 // Call bound function
-                m_manager->bound_funcs[call_id](this);
+                m_manager->bound_funcs[m_header.call_id](this);
                 // Check if bound function requests to close
                 if (m_bound_close)
                 {
