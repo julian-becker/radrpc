@@ -302,7 +302,7 @@ template <class Derived> class session
         {
             RADRPC_LOG("client::session::on_control_callback: Pong received");
             {
-                std::unique_lock<std::mutex> lock(m_ping_mtx);
+                std::lock_guard<std::mutex> lock(m_ping_mtx);
                 m_pong = true;
             }
             m_ping_cv.notify_all();
@@ -348,19 +348,37 @@ template <class Derived> class session
         core::weak_post<Derived>(derived().shared_from_this(),
                                  derived().m_stream.get_executor(),
                                  std::bind(&session::handle_ping, this));
+        // After this point the client could theoretical receive a pong
+        // without waiting before, so it needs to check this.
+        // Todo putting the lock at the top might also work instead of
+        // checking m_pong after lock
 
 
+        // Set timeout from thread local
         auto response_timeout = core::response_timeout();
         if (response_timeout == duration::zero())
             response_timeout = m_client_timeout->response_timeout;
-        std::unique_lock<std::mutex> lock(m_ping_mtx);
-        m_pong = false;
-        bool pong =
-            m_ping_cv.wait_for(lock, response_timeout, [&] { return m_pong; });
         core::response_timeout(duration::zero());
-        if (!pong)
-            RADRPC_LOG("client::session::ping: Timeout");
-        return pong;
+
+
+        std::unique_lock<std::mutex> lock(m_ping_mtx);
+        // Check if already received a pong
+        if (m_pong)
+        {
+            m_pong = false;
+            return true;
+        }
+        // No pong received yet, wait now with re-locking
+        // condition variable
+        else
+        {
+            bool pong = m_ping_cv.wait_for(
+                lock, response_timeout, [&] { return m_pong; });
+            m_pong = false;
+            if (!pong)
+                RADRPC_LOG("client::session::ping: Timeout");
+            return pong;
+        }
     }
 
     /**
@@ -392,6 +410,11 @@ template <class Derived> class session
                                            data_size));
 
 
+        // Set timeout from thread local
+        auto send_timeout = core::send_timeout();
+        if (send_timeout == duration::zero())
+            send_timeout = m_client_timeout->send_timeout;
+        core::send_timeout(duration::zero());
         // This ensures the referenced data itself will not be used anymore if
         // it was written. However if the message was processed with
         // 'async_write' & is not completed it still references the used
@@ -399,11 +422,7 @@ template <class Derived> class session
         // for session destruction. This means if the session is destructed the
         // handler passed to 'async_write' is also completed, since it was bound
         // with 'shared_from_this'
-        auto send_timeout = core::send_timeout();
-        if (send_timeout == duration::zero())
-            send_timeout = m_client_timeout->send_timeout;
         std::future_status status = written.wait_for(send_timeout);
-        core::send_timeout(duration::zero());
         if (status != std::future_status::ready)
         {
             RADRPC_LOG("client::session::send: Timeout on send");
@@ -449,6 +468,11 @@ template <class Derived> class session
                                            data_size));
 
 
+        // Set timeout from thread local
+        auto send_timeout = core::send_timeout();
+        if (send_timeout == duration::zero())
+            send_timeout = m_client_timeout->send_timeout;
+        core::send_timeout(duration::zero());
         // This ensures the referenced data itself will not be used anymore if
         // it was written. However if the message was processed with
         // 'async_write' & is not completed it still references the used
@@ -456,11 +480,7 @@ template <class Derived> class session
         // for session destruction. This means if the session is destructed the
         // handler passed to 'async_write' is also completed, since it was used
         // with 'shared_from_this'
-        auto send_timeout = core::send_timeout();
-        if (send_timeout == duration::zero())
-            send_timeout = m_client_timeout->send_timeout;
         std::future_status status = written.wait_for(send_timeout);
-        core::send_timeout(duration::zero());
         if (status != std::future_status::ready)
         {
             RADRPC_LOG("client::session::send_recv: Timeout on send");
@@ -469,16 +489,17 @@ template <class Derived> class session
         }
 
 
-        // Wait for response
+        // Set timeout from thread local
         auto response_timeout = core::response_timeout();
         if (response_timeout == duration::zero())
             response_timeout = m_client_timeout->response_timeout;
+        core::response_timeout(duration::zero());
+        // Wait for response
         if (!m_cache.wait(result_id, response_timeout, recv_bytes))
         {
             RADRPC_LOG("client::session::send_recv: Timeout on receive");
             ec = boost::asio::error::timed_out;
         }
-        core::response_timeout(duration::zero());
     }
 };
 
