@@ -248,15 +248,15 @@ template <class Derived> class session
         auto buffer_front = boost::beast::buffers_front(m_read_buffer.data());
         if (buffer_front.size() >= sizeof(io_header))
         {
-            auto header =
-                reinterpret_cast<io_header *>(buffer_front.data());
+            // Copy header & clear its portion
+            auto header = *reinterpret_cast<io_header *>(buffer_front.data());
+            m_read_buffer.consume(sizeof(io_header));
 
             // Convert to host byte order
-            header->call_id = ntohl(header->call_id);
-            header->result_id = ntohl_uint64(header->result_id);
+            header.call_id = ntohl(header.call_id);
+            header.result_id = ntohl_uint64(header.result_id);
 
-            auto func_itr = derived().m_bound_funcs->find(header->call_id);
-            m_read_buffer.consume(sizeof(io_header));
+            auto func_itr = derived().m_bound_funcs->find(header.call_id);
             if (func_itr != derived().m_bound_funcs->end())
             {
                 // Call broadcast handler
@@ -266,7 +266,7 @@ template <class Derived> class session
             }
             else
             {
-                m_cache.swap_notify(header->result_id, m_read_buffer);
+                m_cache.swap_notify(header.result_id, m_read_buffer);
             }
         }
         else
