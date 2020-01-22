@@ -324,8 +324,8 @@ template <class Derived> class session
                      client_timeout &p_client_timeout) :
         m_client_cfg(&p_client_cfg),
         m_client_timeout(&p_client_timeout),
-        m_cache(config::queue_recv_max_bytes),
-        m_queue(config::queue_send_max_bytes),
+        m_cache(config::queue_recv_max_entries),
+        m_queue(config::queue_send_max_entries),
         m_ping(false),
         m_pong(false),
         m_read_error(false),

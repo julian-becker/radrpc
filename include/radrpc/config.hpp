@@ -54,8 +54,8 @@ constexpr int64_t deadlock_secs = 30;
 constexpr int64_t io_timeout_secs = 5;
 
 constexpr std::size_t handshake_max_bytes = 1024;
-constexpr std::size_t queue_recv_max_bytes = 500;
-constexpr std::size_t queue_send_max_bytes = 500;
+constexpr std::size_t queue_recv_max_entries = 2000;
+constexpr std::size_t queue_send_max_entries = 2000;
 
 constexpr duration close_timeout = std::chrono::seconds(2);
 constexpr duration handshake_timeout = std::chrono::seconds(2);

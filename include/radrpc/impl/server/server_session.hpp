@@ -163,7 +163,7 @@ template <class Derived> class server_session : private session_context
         if (derived().m_closing || derived().m_remote_sent_close ||
             m_write_error || m_read_error)
             return;
-        if (m_queue.size() >= config::queue_send_max_bytes)
+        if (m_queue.size() >= config::queue_send_max_entries)
             return;
         m_queue.push_back(data);
         if (m_queue.size() > 1)
