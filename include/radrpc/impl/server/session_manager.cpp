@@ -44,7 +44,7 @@ void session_manager::broadcast(uint32_t call_id,
                                 const std::vector<char> &send_bytes,
                                 StlContainer *session_ids)
 {
-    if (m_msg_queued >= config::queue_send_max_bytes)
+    if (m_msg_queued >= static_cast<long>(config::queue_send_max_bytes))
     {
         RADRPC_LOG("session_manager::broadcast: Queue is full");
         return;
