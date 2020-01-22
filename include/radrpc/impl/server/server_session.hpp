@@ -136,7 +136,7 @@ template <class Derived> class server_session : private session_context
                 if (!response.empty())
                 {
                     // Convert to network byte order (big endian)
-                    m_header.call_id = htonl(m_header.call_id);
+                    m_header.call_id = 0;
                     m_header.result_id = htonl_uint64(m_header.result_id);
 
                     const auto push =
