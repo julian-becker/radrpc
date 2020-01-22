@@ -28,6 +28,8 @@
 #include <iostream>
 #include <thread>
 
+#include <radrpc/debug/log.hpp>
+
 namespace radrpc {
 namespace debug {
 
@@ -72,6 +74,30 @@ template <typename T> class instance_track
             m_thread.join();
     }
 };
+
+#ifdef NDEBUG
+
+#define RADRPC_DEBUG_LOOP()                                                    \
+    do                                                                         \
+    {                                                                          \
+    } while (false)
+
+#else
+
+#define RADRPC_DEBUG_LOOP()                                                    \
+    do                                                                         \
+    {                                                                          \
+        RADRPC_DLOG("KEEPING EXCEPTION THREAD ALIVE IN LOOP");                 \
+        bool run_debug_loop = true;                                            \
+        for (;;)                                                               \
+        {                                                                      \
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));        \
+            if (!run_debug_loop)                                               \
+                break;                                                         \
+        }                                                                      \
+    } while (false)
+
+#endif
 
 } // namespace debug
 } // namespace radrpc

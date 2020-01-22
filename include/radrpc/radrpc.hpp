@@ -30,6 +30,7 @@
 #define BOOST_ALL_NO_LIB
 #endif
 
+#include <radrpc/check.hpp>
 #include <radrpc/client.hpp>
 #include <radrpc/config.hpp>
 #include <radrpc/debug/log.hpp>

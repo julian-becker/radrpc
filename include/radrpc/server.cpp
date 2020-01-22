@@ -27,6 +27,7 @@
 #include <boost/beast/websocket/stream.hpp>
 
 #include <radrpc/server.hpp>
+#include <radrpc/debug/instance_track.hpp>
 #include <radrpc/impl/server/listener.hpp>
 
 namespace radrpc {
@@ -46,8 +47,25 @@ void server::run_async_workers(const std::function<void()> &io_stopped_handler)
     {
         m_workers.emplace_back([this, i, workers, io_stopped_handler] {
             RADRPC_LOG("server::run_async_workers: Worker " << i << " started");
-            m_io_ctx.run();
-            RADRPC_LOG("server::run_async_workers: Worker " << i << " done");
+
+            try
+            {
+                boost::system::error_code ec;
+                m_io_ctx.run(ec);
+                RADRPC_LOG("server::run_async_workers: Worker "
+                           << i << " done: " << ec);
+            }
+            catch (std::exception &ex)
+            {
+                RADRPC_LOG("server::run_async_workers: " << ec << "\nEX: "
+                                                              << ex.what());
+                RADRPC_DEBUG_LOOP();
+            }
+            catch (...)
+            {
+                RADRPC_DEBUG_LOOP();
+            }
+
             bool notify;
             {
                 std::unique_lock<std::mutex> worker_lock(m_stop_mtx);

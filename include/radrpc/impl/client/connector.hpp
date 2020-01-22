@@ -25,6 +25,7 @@
 #ifndef RADRPC_IMPL_CLIENT_CONNECTOR_HPP
 #define RADRPC_IMPL_CLIENT_CONNECTOR_HPP
 
+#include <radrpc/debug/instance_track.hpp>
 #include <radrpc/impl/client/session.hpp>
 
 namespace radrpc {
@@ -381,8 +382,23 @@ class connector : public session<connector<StreamType>>,
         *m_thread = std::thread([&] {
             if (m_io_ctx->stopped())
                 m_io_ctx->restart();
-            m_io_ctx->run();
-            RADRPC_LOG("client::connector::run: IO done");
+            try
+            {
+                boost::system::error_code ec;
+                m_io_ctx->run(ec);
+                if (ec)
+                    RADRPC_LOG("client::connector::run: " << ec);
+            }
+            catch (std::exception &ex)
+            {
+                RADRPC_LOG("client::connector::run: " << ec
+                                                      << "\nEX: " << ex.what());
+                RADRPC_DEBUG_LOOP();
+            }
+            catch (...)
+            {
+                RADRPC_DEBUG_LOOP();
+            }
         });
 
         // This could get stuck if "websocket::stream_base::timeout" is set to
