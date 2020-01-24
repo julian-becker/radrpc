@@ -15,12 +15,12 @@ addons:
 matrix:
   include:
 
-    # GCC 8, C++14, libstdc++, Debug
+    # GCC 8, C++14, libstdc++, Release
     - os: linux
       dist: xenial
       compiler: g++-8
       env:
-        - VARIANT=Debug
+        - VARIANT=Release
         - TOOLSET=gcc
         - CCOMPILER=gcc-8
         - CXXCOMPILER=g++-8
