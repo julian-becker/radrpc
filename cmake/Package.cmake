@@ -1,6 +1,6 @@
 # boost
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.70 REQUIRED COMPONENTS filesystem system date_time)
+find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system date_time)
 if (NOT Boost_FOUND)
     message(FATAL "Boost library not found.")
     return()
@@ -37,7 +37,7 @@ if (BUILD_WITH_MSAN AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # boost
     set(ENV{BOOSTC_ROOT} "${MSAN_BOOST_DIR}")
     set(BOOSTC_USE_STATIC ON)
-    find_package(BoostCustom 1.70 COMPONENTS filesystem system date_time)
+    find_package(BoostCustom 1.72 COMPONENTS filesystem system date_time)
     if (NOT BOOSTC_FOUND)
         message(FATAL "Instrumented Boost library not found.")
         return()

@@ -12,10 +12,9 @@ set(COMPILE_WARNINGS
 # Need to set global flags, target_compile_options doesn't seem to work with coverage
 if (SUPPORT_COVERAGE)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(CMAKE_CXX_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
+        clang_append_coverage_compiler_flags()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        # todo currently doesn't work with shared library
-        # set(CMAKE_CXX_FLAGS "-fprofile-arcs -ftest-coverage")
+        gnu_append_coverage_compiler_flags()
     endif()
 endif()
 

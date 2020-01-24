@@ -6,31 +6,38 @@ set_option(BUILD_INTERNAL_SHARED
        OFF)
 set_option(BUILD_EXAMPLES
         "Build all examples located in folder 'examples'"
-       ON)
+       OFF)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+endif()
+set(CMAKE_BUILD_TYPE
+    "${CMAKE_BUILD_TYPE}"
+    CACHE STRING
+    "Build all targets depending on this type")
 set_option(BUILD_TESTS
         "Build common tests to check the implementation"
-       ON)
+       OFF)
 set_option(BUILD_STRESS_TESTS
         "Build all stress tests"
-       ON)
+       OFF)
 set_option(BUILD_WITH_ASAN
-        "Build targets with AddressSanitizer"
-       ON)
+        "Build test targets with AddressSanitizer"
+       OFF)
 set_option(BUILD_WITH_UBSAN
-        "Build targets with UndefinedBehaviorSanitizer"
-       ON)
+        "Build test targets with UndefinedBehaviorSanitizer"
+       OFF)
 set_option(BUILD_WITH_TSAN
-        "Build targets with ThreadSanitizer"
-       ON)
+        "Build test targets with ThreadSanitizer"
+       OFF)
 set_option(BUILD_WITH_MSAN
-        "Build targets with MemorydSanitizer, this requires instrumented libraries"
+        "Build test targets with MemorydSanitizer, this requires instrumented libraries"
        OFF)
 set_option(BUILD_WITH_VALGRIND
-        "Build targets configured for Valgrind"
-       ON)
+        "Build test targets configured for Valgrind"
+       OFF)
 set_option(ENABLE_LOGGING
         "Enables logging for debug purposes"
-       ON)
+       OFF)
 set_option(SUPPORT_COVERAGE
         "Build targets with code coverage, this setting only affects compilers with clang or gnu"
        OFF)
@@ -46,7 +53,7 @@ set(MSAN_OPENSSL_DIR
     CACHE STRING
     "Memory sanitizer instrumented OpenSSL library, only used if BUILD_WITH_MSAN is set")
 set(MSAN_BOOST_DIR
-    "/usr/local/lib/boost_1_70_0_msan"
+    "/usr/local/lib/boost_1_72_0_msan"
     CACHE STRING
     "Memory sanitizer instrumented Boost library, only used if BUILD_WITH_MSAN is set")
 
@@ -60,4 +67,6 @@ message("${BUILD_WITH_VALGRIND}\tBinaries Valgrind")
 message("${ENABLE_LOGGING}\tLogging")
 message("${SUPPORT_COVERAGE}\tCoverage support")
 message("${SUPPORT_SSL}\tSSL support")
-message("${CREATE_SCRIPTS}\tCreate test scripts")
+if (SUPPORT_COVERAGE)
+    set("Coverage will be run on *_valgrind specified binaries")
+endif()
