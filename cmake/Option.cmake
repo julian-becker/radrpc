@@ -72,11 +72,18 @@ message("${BUILD_WITH_VALGRIND}\tBinaries Valgrind")
 message("${ENABLE_LOGGING}\tLogging")
 message("${SUPPORT_COVERAGE}\tCoverage support")
 message("${SUPPORT_SSL}\tSSL support")
+
+if (SUPPORT_COVERAGE AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    unset(SUPPORT_COVERAGE CACHE)
+    option(SUPPORT_COVERAGE "" OFF)
+endif()
+
 if (SUPPORT_COVERAGE)
     message("Coverage will be run on *_valgrind specified binaries")
     include(CodeCoverageGNU)
     include(CodeCoverageLLVM)
 endif()
+
 if (IS_CI_BUILD)
     message("CI BUILD")
 endif()
