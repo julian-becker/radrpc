@@ -435,6 +435,7 @@ TEST_CASE("ssl client implementation")
         srv->async_start();
         sleep_ms(defaults::sleep_high_delay_ms);
         REQUIRE(cl->connect());
+        sleep_ms(defaults::sleep_high_delay_ms);
         srv->broadcast(config::max_call_id - 1, bytes);
         srv->broadcast(0, bytes);
         sleep_ms(defaults::sleep_high_delay_ms);
@@ -443,6 +444,7 @@ TEST_CASE("ssl client implementation")
         REQUIRE(cl->listen_broadcast(
             0, [&](receive_buffer &p_data) { received++; }));
         REQUIRE(cl->connect());
+        sleep_ms(defaults::sleep_high_delay_ms);
         srv->broadcast(config::max_call_id - 1, bytes);
         srv->broadcast(0, bytes);
         sleep_ms(defaults::sleep_high_delay_ms);
