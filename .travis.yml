@@ -1,27 +1,41 @@
- language: c++
-os: linux 
-dist: bionic
+language: cpp
 sudo: required
+
+addons:
+  apt:
+    sources: &base_sources
+      - ubuntu-toolchain-r-test
+    packages: &base_packages
+      - libffi-dev
+      - libstdc++6
+      - binutils-gold
+      # Provides a backtrace if the unittests crash
+      - gdb
 
 matrix:
   include:
-    - compiler: gcc
-      env: CMAKE_CXX_STANDARD=14 BUILD_TYPE=Release
-    - compiler: clang
-      env: CMAKE_CXX_STANDARD=14 BUILD_TYPE=Release
 
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
+    # GCC 8, C++14, libstdc++, RelWithDebInfo
+    - os: linux
+      compiler: g++-8
+      env:
+        - VARIANT=RelWithDebInfo
+        - CCOMPILER=gcc-8
+        - CXXCOMPILER=g++-8
+        - CXXSTD=14
+      addons:
+        apt:
+          packages:
+            - g++-8
+            - libssl-dev
+            - *base_packages
+          sources:
+            - *base_sources
 
 install:
-  - sudo apt-get install -qq g++
-  - sudo update-alternatives --install /usr/bin/g++ g++ 90
   - wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-  - sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
-
+  - sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
 script:
   - mkdir build ; cd build
-  - cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=../install ..
-  - cmake --build . --config $BUILD_TYPE
-  - cmake --build . --target install
+  - cmake .. -CMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON
+  - make
