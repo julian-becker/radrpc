@@ -24,6 +24,7 @@ matrix:
         - CCOMPILER=gcc-8
         - CXXCOMPILER=g++-8
         - CXXSTD=14
+        - OPENSSL_ROOT_DIR=/usr/local/lib/openssl
       addons:
         apt:
           packages:
