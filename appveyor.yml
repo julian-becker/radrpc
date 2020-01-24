@@ -23,7 +23,7 @@ environment:
 install:
   - md build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=$%CONFIGURATION% -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DIS_CI_BUILD=ON -G "Visual Studio 16 2019" ..
+  - cmake -DOPENSSL_INCLUDE_DIR=C:\OpenSSL-v111-Win64\include -DCMAKE_BUILD_TYPE=$%CONFIGURATION% -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DIS_CI_BUILD=ON -G "Visual Studio 16 2019" ..
   - cmake --build . --config %CONFIGURATION%
 
 build: off
