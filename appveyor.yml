@@ -14,7 +14,7 @@ configuration:
   - Release
 
 environment:
-  OPENSSL_ROOT: C:\tools\vcpkg\installed\x64-windows
+  OPENSSL_ROOT: C:\OpenSSL-v111-Win64\bin
   BOOST_ROOT: C:\Libraries\boost_1_71_0
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
