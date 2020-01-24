@@ -20,6 +20,7 @@ matrix:
       compiler: g++-8
       env:
         - VARIANT=RelWithDebInfo
+        - TOOLSET=gcc
         - CCOMPILER=gcc-8
         - CXXCOMPILER=g++-8
         - CXXSTD=14
@@ -33,8 +34,14 @@ matrix:
             - *base_sources
 
 install:
+  - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz
+  - sudo tar -xzf boost_1_72_0.tar.gz
+  - cd boost_1_72_0
+  - ./bootstrap.sh
+  - ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" install
+  - cd ..
   - wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-  - sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
+  - sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
 script:
   - mkdir build ; cd build
   - cmake .. -CMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON
