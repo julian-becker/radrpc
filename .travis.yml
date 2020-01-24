@@ -34,6 +34,7 @@ matrix:
             - *base_sources
 
 install:
+  - cd ..
   - mkdir tmp ; cd tmp
 
   # Install boost
@@ -41,21 +42,23 @@ install:
   - tar -xzf boost_1_72_0.tar.gz
   - cd boost_1_72_0
   - ./bootstrap.sh
-  - travis_wait 30 sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" install
+  - travis_wait 30 sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" -j3 install
   - cd ..
 
   # Install openssl
   - git clone -b OpenSSL_1_1_1-stable --recursive https://github.com/openssl/openssl
   - cd openssl
   - CC="$TOOLSET -O1" ./config --strict-warnings
-  - sudo make > /dev/null 2>&1
+  - travis_wait 30 sudo make
+  - cd ..
 
   # Install cmake
-  - cd ..
   - wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-  - sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr > /dev/null 2>&1
+  - travis_wait 30 sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
 
 script:
+  - cd radrpc
   - mkdir build ; cd build
-  - sudo cmake .. -CMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON
-  - make
+  - sudo cmake .. -CMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DBUILD_WITH_ASAN=ON -DBUILD_WITH_UBSAN=ON -DBUILD_WITH_VALGRIND=ON
+  - travis_wait 40 make -j 2
+  - ctest -j1
