@@ -1,4 +1,4 @@
-if (BUILD_TESTS OR BUILD_STRESS_TESTS)
+if (BUILD_TESTS OR BUILD_STRESS_TESTS OR SUPPORT_COVERAGE)
 
     include(Dart)
     enable_testing()

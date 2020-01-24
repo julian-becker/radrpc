@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+
+set(RADRPC_VERSION @RADRPC_VERSION_MAJOR@.@RADRPC_VERSION_MINOR@.@RADRPC_VERSION_PATCH@)
+
+set(RADRPC_INCLUDE_DIR "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/radrpcTargets.cmake")
+
+if (RADRPC_USE_STATIC_LIBS)
+    set(RADRPC_LIBRARIES radrpc::radrpc_static)
+else()
+    set(RADRPC_LIBRARIES radrpc::radrpc_shared)
+endif()
