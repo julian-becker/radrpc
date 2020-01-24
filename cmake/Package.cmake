@@ -1,6 +1,10 @@
 # boost
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system date_time)
+if (IS_CI_BUILD AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    find_package(Boost 1.71 REQUIRED COMPONENTS filesystem system date_time)
+else()
+    find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system date_time)
+endif()
 if (NOT Boost_FOUND)
     message(FATAL "Boost library not found.")
     return()

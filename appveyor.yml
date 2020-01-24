@@ -1,0 +1,35 @@
+version: 1.0.{build}-{branch}
+
+shallow_clone: true
+
+platform:
+  - x64
+
+branches:
+  only:
+    - master
+    - dev
+
+configuration:
+  - Release
+
+environment:
+  OPENSSL_ROOT: C:\tools\vcpkg\installed\x64-windows
+  BOOST_ROOT: C:\Libraries\boost_1_71_0
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      TOOLSET: msvc-14.2
+
+install:
+  - md build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=$%CONFIGURATION% -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DIS_CI_BUILD=ON -G "%APPVEYOR_BUILD_WORKER_IMAGE%" ..
+  - cmake --build . --config %CONFIGURATION%
+
+build: off
+
+test_script:
+
+  
+cache:
+- c:\tools\vcpkg\installed\

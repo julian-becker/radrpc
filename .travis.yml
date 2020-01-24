@@ -1,3 +1,5 @@
+# https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
+
 language: cpp
 sudo: required
 
@@ -60,5 +62,5 @@ script:
   - cd ..
   - mkdir build ; cd build
   - sudo cmake .. -DCMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DBUILD_WITH_ASAN=ON -DBUILD_WITH_UBSAN=ON -DBUILD_WITH_VALGRIND=ON -DIS_CI_BUILD=ON
-  - travis_wait 30 sudo cmake --build . --config $VARIANT -- -j 3
-  - travis_wait 30 sudo ctest -j1
+  - sudo cmake --build . --config $VARIANT -- -j 3
+  - sudo ctest -j1

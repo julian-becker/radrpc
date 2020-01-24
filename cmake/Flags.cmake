@@ -31,6 +31,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
     set(INSTRUMENTED_COMPILER_FLAGS -stdlib=libc++ -fsanitize-blacklist=${SANITIZER_SUPPRESSION})
     set(LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -rdynamic")
+    if (IS_CI_BUILD)
+        set(LINKER_FLAGS "${LINKER_FLAGS} -fuse-ld=gold")
+    endif()
     set(LINK_LIBRARIES
             ${Boost_LIBRARIES})
     set(INSTRUMENTED_LINK_LIBRARIES
