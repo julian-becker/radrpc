@@ -1,5 +1,12 @@
-# radrpc ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-- [Introduction](#introduction)
+radrpc 
+===========
+
+![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Build Status](https://api.travis-ci.org/reapler/radrpc.svg?branch=master)](https://travis-ci.org/reapler/radrpc)
+
+Radrpc is a high-level remote procedure call library build upon Asio & Beast.
+It is header-only C++14 and represents a asynchronous server & synchronous client.
+
 - [Design goals](#design-goals)
 - [Features](#features)
 - [Examples](#examples)
@@ -10,10 +17,6 @@
 - [License](#license)
 - [Help](#help)
 - [Thanks](#thanks)
-
-## Introduction
-Radrpc is a high-level remote procedure call library build upon Asio & Beast.
-It is header-only C++14 and represents a asynchronous server & synchronous client.
 
 ## Design goals
 Radrpc aims for usability & a simple client-server architecture without sacrificing the advanced aspect of a remote procedure call library.

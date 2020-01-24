@@ -8,7 +8,10 @@ endif()
 
 # openssl
 if(SUPPORT_SSL)
-    find_package(OpenSSL REQUIRED)
+    if (IS_CI_BUILD)
+        set(ENV{OPENSSL_ROOT_DIR} "/usr/local/lib/openssl")
+    endif()
+    find_package(OpenSSL 1.1.1 REQUIRED)
     if(NOT OpenSSL_FOUND)
         message(FATAL "It was requested to build with SSL support but OpenSSL was not found.")
         return()

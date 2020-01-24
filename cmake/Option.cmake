@@ -46,6 +46,9 @@ set_option(SUPPORT_COVERAGE
 set_option(SUPPORT_SSL
         "Configures for ssl usage with OpenSSL"
        ON)
+set_option(IS_CI_BUILD
+        "CI, just ignore this"
+       OFF)
 set(MSAN_LIBCXX_DIR
     "/usr/local/lib/libcxx_msan"
     CACHE STRING

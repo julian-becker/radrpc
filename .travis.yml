@@ -28,7 +28,6 @@ matrix:
         apt:
           packages:
             - g++-8
-            - libssl-dev
             - *base_packages
           sources:
             - *base_sources
@@ -48,7 +47,7 @@ install:
   # Install openssl
   - git clone -b OpenSSL_1_1_1-stable --recursive https://github.com/openssl/openssl
   - cd openssl
-  - CC="$TOOLSET -O1" ./config --strict-warnings
+  - CC="$TOOLSET -O1 -fPIC" ./config --strict-warnings --prefix=/usr/local/lib/openssl --openssldir=/usr/local/lib/openssl
   - travis_wait 30 sudo make
   - cd ..
 
@@ -59,6 +58,6 @@ install:
 script:
   - cd ..
   - mkdir build ; cd build
-  - sudo cmake .. -CMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DBUILD_WITH_ASAN=ON -DBUILD_WITH_UBSAN=ON -DBUILD_WITH_VALGRIND=ON
+  - sudo cmake .. -DCMAKE_BUILD_TYPE=$VARIANT -DCMAKE_C_COMPILER=$CCOMPILER -DCMAKE_CXX_COMPILER=$CXXCOMPILER -DBUILD_TESTS=ON -DENABLE_LOGGING=ON -DBUILD_WITH_ASAN=ON -DBUILD_WITH_UBSAN=ON -DBUILD_WITH_VALGRIND=ON -DIS_CI_BUILD=ON
   - cmake --build . --config $VARIANT -- -j 3
   - ctest -j1
