@@ -36,12 +36,10 @@ install:
   #- cd ..
   - mkdir tmp ; cd tmp
 
-  # Install openssl
-  - git clone -b OpenSSL_1_1_1-stable --recursive https://github.com/openssl/openssl
-  - cd openssl
-  - CC="$TOOLSET -O1 -fPIC" ./config --strict-warnings --prefix=/usr/local/lib/openssl --openssldir=/usr/local/lib/openssl
-  - travis_wait 30 sudo make
-  - cd ..
+  - sudo add-apt-repository ppa:mgrocock/openssl
+  - sudo apt-get update
+  - sudo apt-get install libssl-dev openssl -y
+  - sudo ldconfig
 
 
 

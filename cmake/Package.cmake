@@ -1,7 +1,7 @@
 # openssl
 if(SUPPORT_SSL)
     if (IS_CI_BUILD)
-        set(ENV{OPENSSL_ROOT_DIR} "/usr/local/lib/openssl")
+        #set(ENV{OPENSSL_ROOT_DIR} "/usr/local/lib/openssl")
     endif()
     find_package(OpenSSL 1.1.1 REQUIRED)
     if(NOT OpenSSL_FOUND)
@@ -61,9 +61,13 @@ endif()
 # llvm symbolizer
 if (BUILD_TESTS OR BUILD_STRESS_TESTS)
 
-    find_package(LLVMSymbolizer)
-    if (NOT LLVM_SYMBOLIZER_FOUND)
-        message(WARN "LLVM symbolizer not found.")
+    if (NOT IS_CI_BUILD)
+
+        find_package(LLVMSymbolizer)
+        if (NOT LLVM_SYMBOLIZER_FOUND)
+            message(WARN "LLVM symbolizer not found.")
+        endif()
+
     endif()
 
 endif()
