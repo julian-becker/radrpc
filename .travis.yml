@@ -36,7 +36,7 @@ install:
   #- cd ..
   - mkdir tmp ; cd tmp
 
-  - sudo add-apt-repository ppa:mgrocock/openssl
+  - sudo add-apt-repository ppa:carsten-uppenbrink-net/openssl -y
   - sudo apt-get update
   - sudo apt-get install libssl-dev openssl -y
   - sudo ldconfig
