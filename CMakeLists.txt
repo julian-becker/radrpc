@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.10)
 set(RADRPC_VERSION_MAJOR 1)
 set(RADRPC_VERSION_MINOR 0)
 set(RADRPC_VERSION_PATCH 0)

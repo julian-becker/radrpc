@@ -24,7 +24,6 @@ matrix:
         - CCOMPILER=gcc-8
         - CXXCOMPILER=g++-8
         - CXXSTD=14
-        - OPENSSL_ROOT_DIR=/usr/local/lib/openssl
       addons:
         apt:
           packages:
@@ -37,14 +36,6 @@ install:
   #- cd ..
   - mkdir tmp ; cd tmp
 
-  # Install boost
-  - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz
-  - tar -xzf boost_1_72_0.tar.gz
-  - cd boost_1_72_0
-  - ./bootstrap.sh
-  - travis_wait 30 sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" -j3 install
-  - cd ..
-
   # Install openssl
   - git clone -b OpenSSL_1_1_1-stable --recursive https://github.com/openssl/openssl
   - cd openssl
@@ -52,9 +43,11 @@ install:
   - travis_wait 30 sudo make
   - cd ..
 
+
+
   # Install cmake
-  - wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-  - travis_wait 30 sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr
+  - wget https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.sh
+  - travis_wait 30 sudo sh cmake-3.10.0-Linux-x86_64.sh -- --skip-license --prefix=/usr
 
 script:
   - cd ..

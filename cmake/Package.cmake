@@ -1,11 +1,3 @@
-# boost
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system date_time)
-if (NOT Boost_FOUND)
-    message(FATAL "Boost library not found.")
-    return()
-endif()
-
 # openssl
 if(SUPPORT_SSL)
     if (IS_CI_BUILD)
@@ -16,6 +8,14 @@ if(SUPPORT_SSL)
         message(FATAL "It was requested to build with SSL support but OpenSSL was not found.")
         return()
     endif()
+endif()
+
+# boost
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system date_time)
+if (NOT Boost_FOUND)
+    message(FATAL "Boost library not found.")
+    return()
 endif()
 
 # Find instrumented libraries
