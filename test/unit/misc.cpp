@@ -62,7 +62,7 @@ bool data_compare(const char *lhs_data,
 {
     if (lhs_size != rhs_size)
         return false;
-    for (auto i = 0; i < lhs_size; ++i)
+    for (std::size_t i = 0; i < lhs_size; ++i)
     {
         if (lhs_data[i] != rhs_data[i])
         {

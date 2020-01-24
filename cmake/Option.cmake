@@ -62,6 +62,7 @@ set(MSAN_BOOST_DIR
     CACHE STRING
     "Memory sanitizer instrumented Boost library, only used if BUILD_WITH_MSAN is set")
 
+message("Build type: ${CMAKE_BUILD_TYPE}")
 message("${BUILD_EXAMPLES}\tBuild examples")
 message("${BUILD_TESTS}\tBuild tests")
 message("${BUILD_STRESS_TESTS}\tBuild stress tests")
