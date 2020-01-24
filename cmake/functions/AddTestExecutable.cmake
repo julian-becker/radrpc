@@ -78,7 +78,7 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BUILD_WITH_VALGRIND)
+        if(BUILD_WITH_VALGRIND OR SUPPORT_COVERAGE)
 
             message("Set target: ${BINARY}_valgrind")
 
@@ -104,11 +104,17 @@ function(add_test_executable BINARY SRC_FILES IMPL_CATCH)
             endif()
 
             # Add test
-            if (IMPL_CATCH)
+            if (BUILD_WITH_VALGRIND AND IMPL_CATCH)
                 add_test(
                     NAME TEST_${BINARY}_valgrind
                     COMMAND ${CMAKE_COMMAND} -E env
                     valgrind ${VALGRIND_ARGS} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY}_valgrind)
+            endif()
+
+            # Add coverage as test
+            if (SUPPORT_COVERAGE AND IMPL_CATCH)
+                message("Set target: COVERAGE_${BINARY}")
+                add_test(NAME COVERAGE_${BINARY} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY}_valgrind)
             endif()
 
         endif()

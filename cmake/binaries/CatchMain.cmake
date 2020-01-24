@@ -1,4 +1,4 @@
-if (BUILD_TESTS OR BUILD_STRESS_TESTS)
+if (BUILD_TESTS OR BUILD_STRESS_TESTS OR SUPPORT_COVERAGE)
 
     set(CATCH_MAIN_SRC      
             "${TEST_DIR}/unit/catch_main.cpp")
@@ -47,7 +47,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BUILD_WITH_VALGRIND)
+        if(BUILD_WITH_VALGRIND OR SUPPORT_COVERAGE)
 
             message("Set target: catch_main_valgrind")
 

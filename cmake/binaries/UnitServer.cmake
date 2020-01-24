@@ -1,4 +1,4 @@
-if (BUILD_TESTS)
+if (BUILD_TESTS OR SUPPORT_COVERAGE)
 
     set(UNIT_SERVER_SRC
             "${TEST_DIR}/unit/plain_server.cpp")

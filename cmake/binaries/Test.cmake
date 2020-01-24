@@ -1,4 +1,4 @@
-if (BUILD_TESTS OR BUILD_STRESS_TESTS)
+if (BUILD_TESTS OR BUILD_STRESS_TESTS OR SUPPORT_COVERAGE)
 
     set(TEST_SRC      
             "${TEST_DIR}/core/defaults.cpp"
@@ -71,7 +71,7 @@ if (BUILD_TESTS OR BUILD_STRESS_TESTS)
         endif()
 
         # Build raw binary with BUILD_VALGRIND
-        if(BUILD_WITH_VALGRIND)
+        if(BUILD_WITH_VALGRIND OR SUPPORT_COVERAGE)
 
             message("Set target: test_valgrind")
 

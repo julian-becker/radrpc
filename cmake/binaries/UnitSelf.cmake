@@ -1,4 +1,4 @@
-if (BUILD_TESTS)
+if (BUILD_TESTS OR SUPPORT_COVERAGE)
 
     set(UNIT_SELF_SRC
             "${TEST_DIR}/unit/self.cpp")
