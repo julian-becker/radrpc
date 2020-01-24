@@ -41,19 +41,20 @@ install:
   - tar -xzf boost_1_72_0.tar.gz
   - cd boost_1_72_0
   - ./bootstrap.sh
-  - travis_wait 30 mvn install sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" install > /dev/null 2>&1
+  - travis_wait 30 mvn install
+  - sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" install > /dev/null 2>&1
   - cd ..
 
   # Install openssl
   - git clone -b OpenSSL_1_1_1-stable --recursive https://github.com/openssl/openssl
   - cd openssl
   - CC="$TOOLSET -O1" ./config --strict-warnings
-  - travis_wait 30 mvn install sudo make > /dev/null 2>&1
+  - sudo make > /dev/null 2>&1
 
   # Install cmake
   - cd ..
   - wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-  - travis_wait 30 mvn install sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr > /dev/null 2>&1
+  - sudo sh cmake-3.9.2-Linux-x86_64.sh -- --skip-license --prefix=/usr > /dev/null 2>&1
 
 script:
   - mkdir build ; cd build
