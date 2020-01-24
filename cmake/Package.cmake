@@ -12,6 +12,7 @@ endif()
 
 # openssl
 if(SUPPORT_SSL)
+    message("OpenSSL root: $ENV{OPENSSL_ROOT_DIR}")
     find_package(OpenSSL 1.1.1 REQUIRED)
     if(NOT OpenSSL_FOUND)
         message(FATAL "It was requested to build with SSL support but OpenSSL was not found.")

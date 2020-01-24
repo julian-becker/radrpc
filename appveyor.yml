@@ -27,9 +27,3 @@ install:
   - cmake --build . --config %CONFIGURATION%
 
 build: off
-
-test_script:
-
-  
-cache:
-- c:\tools\vcpkg\installed\
