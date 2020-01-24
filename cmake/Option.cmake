@@ -1,3 +1,5 @@
+set(CACHE_OPTION ON)
+
 set_option(BUILD_SHARED
         "Builds radrpc also as shared library"
        ON)

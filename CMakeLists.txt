@@ -18,7 +18,6 @@ set(EXAMPLE_DIR "${PROJECT_SOURCE_DIR}/examples")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/include/radrpc")
 set(SANITIZER_SUPPRESSION "${PROJECT_SOURCE_DIR}/sanitizer_suppression.txt")
-set(CACHE_OPTION OFF)
 set(LOCAL "${PROJECT_SOURCE_DIR}/cmake")
 include(ExternalProject)
 
