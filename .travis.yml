@@ -17,6 +17,7 @@ matrix:
 
     # GCC 8, C++14, libstdc++, RelWithDebInfo
     - os: linux
+      dist: xenial
       compiler: g++-8
       env:
         - VARIANT=RelWithDebInfo
@@ -36,12 +37,20 @@ install:
   #- cd ..
   - mkdir tmp ; cd tmp
 
+  # Install openssl
   - sudo add-apt-repository ppa:carsten-uppenbrink-net/openssl -y
   - sudo apt-get update
   - sudo apt-get install libssl-dev openssl -y
   - sudo ldconfig
 
-
+  # Install boost
+  - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz
+  - tar -xzf boost_1_72_0.tar.gz
+  - cd boost_1_72_0
+  - ./bootstrap.sh
+  - travis_wait 30 sudo ./b2 -a toolset=$TOOLSET cxxflags="-fPIC" -j3 install
+  - cd ..
+  - sudo ldconfig
 
   # Install cmake
   - wget https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.sh
